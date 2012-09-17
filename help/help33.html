@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="scripts/shCore.js"></script> 
+<script type="text/javascript" src="scripts/shBrushBash.js"></script> 
+<script type="text/javascript" src="scripts/shBrushPlain.js"></script> 
+<link href="styles/shCoreDefault.css" rel="stylesheet" type="text/css" /> 
+<link href="css.css" rel="stylesheet" type="text/css" /> 
+
+<title>Postfix和Dovecot安装配置</title>
+</head>
+
+<body>
+<table>
+<tbody>
+<tr>
+<td>
+<h2>一、Postfix基本配置</h2>
+<h3>1.安装：</h3>
+<pre class="brush: bash">
+yum -y install postfix
+chkconfig postfix on
+</pre>
+<br/>
+<h3>2.配置：</h3>
+默认情况postfix只接收发到@主机名的邮件,而不接收@域名的邮件,一般要修改mydestination:
+<pre class="brush: bash">
+postconf -e 'mydestination=localhost, localhost.$mydomain, $myhostname, $mydomain'
+</pre>
+ 
+inet_interfaces这个参数,表示可以接受哪些地址传来的邮件,目前使用all:
+<pre class="brush: bash">
+postconf -e 'inet_interfaces=all'
+</pre>
+<br/>
+<h3>3.与sendmail</h3>
+如果安装了sendmail,为防止postfix与sendmail同时运行产生冲突,首先检查系统默认的MTA是什么：
+<pre class="brush: bash">
+alternatives --display mta
+</pre>
+如果不是Postfix,改成Postfix：
+<pre class="brush: bash">
+/usr/sbin/alternatives --set mta /usr/sbin/sendmail.postfix
+</pre>
+并删除sendmail:
+<pre class="brush: bash">
+yum erase sendmail
+</pre>
+重启postfix:
+<pre class="brush: bash">
+postfix stop
+postfix start
+</pre>
+<br/>
+<h3>4.最后测试postfix是否正常使用：</h3>
+<pre class="brush: bash">
+yum -y install telnet
+yum -y install mailx
+telnet 主机名 25
+#进入交互模式
+#介绍自己
+EHLO anywordtosayhello
+mail from: root@域名
+rcpt to: 帐号@qq.com
+data
+#输入你的邮件内容,最后要另起一段以句点结束
+.
+quit
+</pre>
+检查你的邮箱里是否收到邮件,收到回一封,然后回到服务器,输入mail命令,即可看到回复的邮件.<br/>
+ 
+ <br/>
+<h2>二、配置dovecot用以收取邮件</h2>
+<h3>1.首先安装dovecot:</h3>
+<pre class="brush: bash">
+yum install dovecot
+chkconfig dovecot on
+</pre>
+<br/>
+<h3>2.配置dovecot:</h3>
+<pre class="brush: bash">
+cp /etc/dovecot.conf  /etc/dovecot.conf.backup_201208071545（把原来的配置文件备份,文件名加上日期时间以区别不同的备份）
+vi /etc/dovecot.conf 
+</pre>
+<pre class="brush: text">
+mail_location = maildir:~/Maildir 
+disable_plaintext_auth = no 
+</pre>
+配置SASL认证：
+在mechanisms字段加上login,成为这个样子： 
+<pre class="brush: text">
+mechanisms = plain login 
+</pre>
+编辑socket listen字段,成为这个样子：  
+<pre class="brush: text">
+socket listen { 
+  client { 
+  path = /var/spool/postfix/private/auth-client 
+  mode = 0660 
+  user = postfix 
+  group = postfix 
+  } 
+} 
+</pre>
+
+<h3>3.修改postfix的配置文件与dovecot配合使用:</h3>
+<pre class="brush: bash"> 
+postconf -e 'home_mailbox = Maildir/'
+postconf -e 'smtpd_sasl_type = dovecot' 
+postconf -e 'smtpd_sasl_path = private/auth-client' 
+postconf -e 'smtpd_sasl_local_domain =' 
+postconf -e 'smtpd_sasl_security_options = noanonymous' 
+postconf -e 'broken_sasl_auth_clients = yes' 
+postconf -e 'smtpd_sasl_auth_enable = yes' 
+postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated,permit_mynetworks,reject_unauth_destination'  
+</pre>
+<h3>4.重启postfix和dovecot:</h3>
+<pre class="brush: bash">
+postfix stop
+postfix start
+service dovecot restart
+</pre>
+<h3>5.给系统添加新的用户：</h3>
+<pre class="brush: bash">
+useradd 新用户名
+</pre>
+然后设置新用户的密码：
+<pre class="brush: bash">
+passwd 新用户名
+passwd -u 新用户名
+</pre>
+ 
+这时使用outlook或者foxmail等邮件客户端软件,用新添加的系统帐号：新用户名@域名,登录我们的邮件服务器收发邮件.如果不能收和发,说明postfix和dovecot没有设置对.
+参考文档：http://yubosun.akcms.com/tech/postfix-dovecot-smtp.htm<br/>
+ 
+ <br/>
+<h2>三、虚拟域设置</h2>
+如果是来添加邮箱帐号的,请直接看4.<br/>
+<h3>1.Postfix的设置</h3>
+经常有多个域名做MX记录到同一台主机的情况.Postfix默认主机名所对应的域名是本地域名,用其他域名收发邮件会失败.其他域名要想也能收发邮件,需要做虚拟域名方面的设置.<br/>
+另外为了不再使用系统用户登录邮件服务器收发邮件,我们需要用虚拟帐号,并将所有虚拟帐号的邮件投放到本地机器上的一个目录（虚拟邮箱目录）下.<br/>
+ <br/>
+1).首先是建一个文本,里面存放所有的虚拟域名：
+<pre class="brush: bash">
+echo > /etc/postfix/vdomains
+</pre>
+然后告诉Postfix,系统的虚拟域名有哪些：
+<pre class="brush: bash">
+postconf -e "virtual_mailbox_domains = /etc/postfix/vdomains"
+</pre>
+ 
+2).接下来设置虚拟邮箱的根目录：
+<pre class="brush: bash">
+postconf -e "virtual_mailbox_base= /home/vmail"
+</pre>
+
+3).创建一个系统用户和组,给Postfix的virtual MDA使用,从而成为所有的虚拟邮件文件的拥有者.
+<pre class="brush: bash">
+groupadd -g 5000 vmail
+useradd -m -g vmail -u 5000 -d /home/vmail -s /bin/bash vmail
+postconf -e "virtual_minimum_uid = 5000"
+postconf -e "virtual_uid_maps = static:5000"
+postconf -e "virtual_gid_maps = static:5000"
+</pre>
+检查/home下是否有了一个vmail目录,如果没有,自己添加：
+<pre class="brush: bash">
+cd /home
+mkdir vmail
+chown -R vmail:vmail vmail
+</pre>
+ 
+4).建一个文本,提供邮箱帐号到该帐号邮箱目录的映射：
+<pre class="brush: bash">
+echo >  /etc/postfix/vmailbox
+</pre>
+注意：每次编辑完这个文本,都要运行一次
+<pre class="brush: bash">
+postmap /etc/postfix/vmailbox
+</pre>
+更新这个映射的数据库文件.
+ 
+然后告诉Postfix这个邮箱目录映射表：
+<pre class="brush: bash">
+postconf -e "virtual_mailbox_maps = hash:/etc/postfix/vmailbox"
+</pre>
+ 
+如果系统没有那些新帐号的目录,还需要创建它：
+<pre class="brush: bash">
+cd /home
+mkdir vmail/news360buy.com
+mkdir vmail/news360buy.com/gene
+mkdir vmail/news360buy.com/gene/Maildir
+chown -R vmail:vmail vmail/news360buy.com
+</pre>
+ 
+至此Postfix的设置完成,可以使用gene@news360buy.com这个帐号发送邮件,并且它收到的邮件将保存在/home/vmail/news360buy.com/gene/Maildir目录下.但从这个目录取出邮件还需要设置dovecot.<br/>
+ 
+ <br/>
+<h3>2.dovecot的设置</h3>
+<pre class="brush: bash">
+vi /etc/dovecot.conf
+</pre>
+A.首先是修改邮箱目录：
+<pre class="brush: text">
+mail_location = maildir:/home/vmail/%d/%n/Maildir
+</pre>
+其中%d表示域名部分,%n表示人名部分.<br/>
+ 
+B.找到userdb static项,修改成这样：
+<pre class="brush: text">
+userdb static {
+args = uid=vmail gid=vmail home=/home/vmail/%d/%n
+}
+</pre>
+
+C.设置邮箱用户的密码认证.<br/>
+找到passdb passwd-file项,修改成这样：
+<pre class="brush: text">
+passdb passwd-file {
+ File contains a list of usernames, one per line
+args = /etc/dovecot/passwd
+deny = yes
+}
+</pre>
+然后是创建一个密码文件,里面存放邮箱用户登录pop服务器时所需的密码：
+<pre class="brush: bash">
+vi /etc/dovecot/passwd
+</pre>
+<pre class="brush: text">
+gene@news360buy.com:{plain}mypassword:5000:5000::/home/vmail/news360buycom/gene/
+</pre>
+为了密码文件安全,修改密码文件的权限
+<pre class="brush: bash">
+chmod 700 /etc/dovecot/passwd
+</pre>
+密码文件的格式参考http://wiki.dovecot.org/AuthDatabase/PasswdFile<br/>
+如果不想将密码写成明文,可以用其他加密方式,以plain-md5为例,用<br/>
+<pre class="brush: bash">
+dovecotpw -s PLAIN-MD5
+</pre>
+得到加密后的密码,然后将/etc/dovecot/passwd中的密码段改成{PLAIN-MD5}cryptpassword即可.<br/>
+ <br/>
+最后是重启Postfix和Dovecot.<br/>
+ <br/>
+<h3>3.注意事项：</h3>
+在其他软件（比如emailmarketer和foxmail等邮件客户端）中使用虚拟域的帐号收发邮件时,邮箱帐号一定要包含域名以填完整.<br/>
+比如主机名是port02.sixsmell.com,上面有个帐号叫info@foubei.com.现在在其他软件中用这个帐号时,就要写info@foubei.com,如果只写info,会被系统认为是主机的帐号info@sixsmell.com而不是虚拟域的帐号info@foubei.com.<br/>
+<br/>
+<h2>四、Postfix队列管理</h2>
+ 
+五种队列： 输入incoming、活动active、等待deferred、故障corrupt、保留hold.<br/>
+ <br/>
+一些参数：<br/>
+Postfix每隔一段时间扫描一次等待队列,将其中可以再次投递的邮件进行再次投递,<br/>
+这个时间由queue_run_delay参数决定.<br/>
+ 
+邮件第一次投递不成功后,会得到一个时间间隔,过了间隔它才允许被再次投递,之后每次不成功都会延长这个间隔.<br/>
+另外这个时间间隔也有上下限,分别由参数minimal_backoff_time和maximal_backoff_time决定.<br/>
+ 
+邮件在等待队列里的时间不能超过maximal_queue_lifetime,超过则被退信.<br/>
+ 
+qmgr_message_active_limit限定活动队列最多可容纳多少封邮件.<br/>
+ <br/>
+ 
+队列管理工具：<br/>
+查看所有队列<br/>
+<pre class="brush: bash">
+postqueue -p
+</pre>
+<br/>
+ 删除某一个邮件
+<pre class="brush: bash">
+postsuper -d 邮件ID
+</pre>
+<br/>
+ 删除队列里所有邮件
+<pre class="brush: bash">
+postsuper -d ALL
+</pre>
+<br/>
+ 将邮件搬到无限停留的保留队列
+<pre class="brush: bash">
+postsuper -h 邮件ID
+</pre>
+<br/>
+ 将邮件移回原来的队列
+<pre class="brush: bash">
+postsuper -H 邮件队列
+</pre>
+<br/>
+ 查看一封邮件的内容
+<pre class="brush: bash">
+postcat -q 邮件ID
+</pre>
+<br/>
+立刻投递滞留在队列里的邮件 
+<pre class="brush: bash">
+postqueue -f
+</pre>
+ 
+ 
+</td>
+</tr>
+</tbody>
+</table>
+
+<script type="text/javascript">
+SyntaxHighlighter.config.bloggerMode = true; 
+SyntaxHighlighter.defaults['toolbar'] = false;  
+SyntaxHighlighter.defaults['auto-links'] = false; 
+SyntaxHighlighter.all() 
+
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+#!/usr/bin/expect
+
+#无交互脚本范例
+set IP 116.255.156.192
+spawn telnet $IP 25
+expect {
+#	-d	{ send_user "can not connect to smtp server,quit.\n"}
+	"*220*"	{ send_user "sucess.\n"; exp_send "ehlo I'm the king!\n" }
+}
+
+expect "*250*" { exp_send "mail from:gene@foubei.com\n" }
+expect "*250*" { exp_send "rcpt to:jlugene@qq.com\n" }
+expect "*250*" { exp_send "data\n" }
+expect "*354*" { exp_send "hi\n.\n" }
+expect "*250*" { exp_send "quit\n" }
+
+exit -onexit {
+	send_user "something is wrong ,byebye.\n"
+}

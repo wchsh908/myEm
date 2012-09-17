@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="scripts/shCore.js"></script> 
+<script type="text/javascript" src="scripts/shBrushBash.js"></script> 
+<script type="text/javascript" src="scripts/shBrushPlain.js"></script> 
+<link href="styles/shCoreDefault.css" rel="stylesheet" type="text/css" /> 
+<link href="css.css" rel="stylesheet" type="text/css" /> 
+
+<title>网络问题汇总</title>
+</head>
+
+<body>
+<table>
+<tbody>
+<tr>
+<td>
+
+<h2>一、IP</h2>
+1.为以太网卡添加ip别名
+<pre class="brush: bash">
+cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0:1
+vi /etc/sysconfig/network-scripts/ifcfg-eth0:1
+</pre>
+<pre class="brush: text">
+DEVICE=eth0:1
+IPADDR=新ip
+</pre>
+使配置生效：
+<pre class="brush: bash">
+service network restart
+</pre>
+用
+<pre class="brush: bash">
+ifconfig
+</pre>
+可以查看当前系统的网络设置，包括IP地址。<br/>
+<br/>
+2.修改源IP<br/>
+默认情况下，系统向外界发送数据包时，使用的源IP是eth0那个主IP。要想改成其他IP,需要修改静态路由表。用
+<pre class="brush: bash">
+ip route
+</pre>
+可以查看系统的静态路由表。运行
+<pre class="brush: bash">
+ip route change default src $IP dev eth0
+</pre>
+即可修改源IP。<br/>
+要想使用大量IP自动轮换的发邮件，请用我们的工具，详细用法在第四份文档中。
+
+<br/>
+<h2>二、telnet</h2>
+1.使用telnet客户端请安装
+<pre class="brush: bash">
+yum install telnet
+</pre>
+2.要使主机能够被别的主机用telnet连接上，还需安装telnet服务端。<br/>
+如果系统没有自带这个软件的话，需要：
+<pre class="brush: bash">
+yum install telnet-server
+</pre>
+另外telnet是个不安全的协议，很多Linux系统默认禁用telnet服务。<br/>
+所以安装后测试一下让别的主机连接本主机，如果连接不上，很可能是telnet服务被禁用了。<br/>
+启用的办法：
+<pre class="brush: bash">
+vi /etc/xinetd.d/telnet
+</pre>
+将disable一行的yes改为no
+ 
+ 
+三、httpd
+1.修改httpd监听端口<br/>
+首先用
+<pre class="brush: bash">
+semanage port -l
+</pre>
+可以查看所以被使用的端口。<br/>
+选择一个没有被其他协议使用的，0-65535之间的一个数做新端口，比如81。
+<pre class="brush: bash">
+semanage port -l | grep http_port_t
+</pre>
+查看http相关端口
+<pre class="brush: text">
+http_port_t tcp 80, 443, 488, 8008, 8009, 8443
+</pre>
+如果这个新端口81不在上述范围内，添加进来
+<pre class="brush: bash">
+semanage port -a -t http_port_t tcp 81
+</pre>
+然后重启httpd
+<pre class="brush: bash">
+service httpd restart
+</pre>
+在PC中打开浏览器，输入：
+http://ip:81<br/>
+
+ <br/>
+2.配置apache使其支持多个ip。<br/>
+[注]这一步现在已经不再必须。<br/>
+ <br/>
+详细文档见http://httpd.apache.org/docs/current/vhosts/<br/>
+编辑apache的配置文件：
+<pre class="brush: bash">
+cp /etc/httpd/conf/httpd.conf  /etc/httpd/conf/httpd.conf.backup_201008071800
+vi /etc/httpd/conf/httpd.conf
+</pre>
+在最后添加
+<pre class="brush: text">
+<VirtualHost 116.255.162.71:80>
+     DocumentRoot /var/www/html
+     ServerName 你的主机名
+     ErrorLog logs/你的主机名-error_log
+     CustomLog logs/你的主机名-access_log common
+</VirtualHost>
+
+<VirtualHost 116.255.162.64:80>
+     DocumentRoot /var/www/html_2nd_ip
+     ServerName unknownname
+     ErrorLog logs/2nd_ip-error_log
+     CustomLog logs/2nd_ip-access_log common
+</VirtualHost>
+</pre>
+重启httpd:
+<pre class="brush: bash">
+service httpd restart
+</pre>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+<script type="text/javascript">
+SyntaxHighlighter.config.bloggerMode = true; 
+SyntaxHighlighter.defaults['toolbar'] = false;  
+SyntaxHighlighter.defaults['auto-links'] = false; 
+SyntaxHighlighter.all() 
+
+</script>
+</body>
+</html>
