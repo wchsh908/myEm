@@ -32,7 +32,7 @@
   float: none !important;
   height: auto !important;
   left: auto !important;
-  line-height: 1.1em !important;
+  line-height: 1.3em !important;
   margin: 0 !important;
   outline: 0 !important;
   overflow: visible !important;
@@ -44,17 +44,24 @@
   vertical-align: baseline !important;
   width: auto !important;
   box-sizing: content-box !important;
-  font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important;
+  font-family: "Monaco", "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important;
   font-weight: normal !important;
   font-style: normal !important;
-  font-size: 1em !important;
+  /*原来是1em*/
+  font-size: 10pt !important;
   min-height: inherit !important;
   min-height: auto !important;
 }
-.syntaxhighlighter table {margin: 1px 0 !important;}
+
+/*添加这一行使得google chrome不出现滚动条*/
+.syntaxhighlighter table {
+	margin: 2px 0 !important;
+}
+
+/*修改控件的margin,原来上、下是1*/
 .syntaxhighlighter {
   width: 100% !important;
-  margin: 0.3em 0 0.3em 0 !important;
+  margin: 0.5em 0 0.5em 0 !important;
   position: relative !important;
   overflow: auto !important;
   font-size: 1em !important;
@@ -325,4 +332,15 @@
 
 .syntaxhighlighter .keyword {
   font-weight: bold !important;
+}
+
+/*这三行是自定义样式，为了将文本与shell代码区别开来*/
+.class_text  .plain, .class_name_demo .plain a {
+  color: gray !important;
+}
+.class_text .gutter {
+  color: #afafaf !important;
+}
+.class_text .gutter .line {
+  border-right: 3px solid #afafaf !important;
 }

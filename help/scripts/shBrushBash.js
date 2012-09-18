@@ -37,7 +37,7 @@
 						'uname unexpand uniq units unset unshar useradd usermod users uuencode uudecode v vdir ' +
 						'vi watch wc whereis which who whoami Wget xargs yes yum hostname iptables postfix chkconfig service ' +
 						'killall unzip ip semanage mysql postconf alternatives groupadd postmap dovecotpw postqueue postsuper ' +
-						'postcat telnet '  
+						'postcat telnet rpm wget'  
 						;
 
 		this.regexList = [

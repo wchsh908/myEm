@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="scripts/shCore.js"></script> 
+<script type="text/javascript" src="scripts/shBrushBash.js"></script> 
+<script type="text/javascript" src="scripts/shBrushPlain.js"></script> 
+<link href="styles/shCoreDefault.css" rel="stylesheet" type="text/css" /> 
+<link href="styles/css.css" rel="stylesheet" type="text/css" /> 
+<title>工具</title>
+</head>
+
+<body>
+<table>
+<tbody>
+<tr>
+<td>
+
+ 这里介绍几个工具，它们都放在/var/www/html/tools目录下。
+<h1>一、Postfix的虚拟域帐号管理脚本</h1>
+该脚本叫postaccountadmin.sh，用
+<pre class="brush: bash">
+cd /var/www/html/tools
+</pre>
+即可运行。用法是：<br/><br/>
+<pre class="brush: bash">
+./postaccountadmin.sh -s
+</pre>
+查看系统所有的虚拟域和邮箱帐号。<br/><br/>
+<pre class="brush: bash">
+./postaccountadmin.sh -a domain
+</pre>
+向系统添加一个虚拟域。不能重复添加。<br/><br/>
+
+<pre class="brush: bash">
+./postaccountadmin.sh -a user@domain
+</pre>
+向系统添加一个邮箱帐号。必须确保domain已经添加了，而user还没有添加。<br/><br/>
+
+<pre class="brush: bash">
+./postaccountadmin.sh -d user@dommain
+</pre>
+从系统中删除一个邮箱帐号，连同它所有的邮件会一并删除。<br/><br/>
+
+<pre class="brush: bash">
+./postaccountadmin.sh -d domain
+</pre>
+从系统中删除一个域名。必须先确保该域名下没有用户了。<br/><br/>
+  
+<h1>二、轮换源IP脚本</h1>
+在/var/www/html/tools/IP目录下<br/>
+srcIP.txt存放的是本机所有IP<br/>
+sleep_cycle.txt配置的是轮换周期<br/>
+使用
+<pre class="brush: bash">
+./serviceip start
+</pre>
+即可轮换IP
+<br/>
+<h1>三、批量发送邮件测试脚本</h1>
+位于mailtest目录下的mailtest.sh<br/>
+该脚本使用固定IP，以给定的速度批量给单个邮局的邮箱群发送若干时间邮件。发送完输出退信数量和延迟发送的数量。以此可以大致得出该邮局对单个IP的发送数量限制。<br/>
+用法是
+
+<pre class="brush: bash">
+cd /var/www/html/tools/mailtest
+./mailtest.sh speed minute
+</pre>
+脚本将以每分钟speed封邮件的速度发送minute分钟。<br/>
+因为测试的是对IP的影响，所以使用多个发件人很有必要。发件人名单放在from.txt中。<br/>
+收件人名单放在to.txt。<br/>
+邮件内容使用一个模版，名为mailtemplate.txt。每此发送时会对其中的一些参数如收信人、发信人做替换。（模版中的链接也应该做一些替换的，目前还没有做。）<br/>
+<br/>
+<h1>四、退信统计脚本</h1>
+是在bounce目录下的bounce_analysis.sh。
+该脚本的用法是：
+
+<pre class="brush: bash">
+cd /var/www/html/tools/bounce
+./bounce_analysis.sh  bounceuser1@domain1   bounceuser2@domain2 ...
+</pre>
+脚本将统计分析所输入的各退信邮箱帐号中新收到的邮件，分析退信原因，并做相关处理。<br/>
+处理后将新收到的邮件标记为已读。<br/>
+也可以不输入参数，直接使用
+
+<pre class="brush: bash">
+./bounce_analysis.sh
+</pre>
+这时将从同目录下的bounce_accounts.txt中读取退信邮箱帐号并做分析。<br/>
+
+目前实现的分析功能包括：<br/>
+1.查出无效的收信人邮箱<br/>
+有些邮局发现如果你一段时间内经常发送邮件给无效的收信人，就会认为你是在发垃圾邮件。<br/>
+所以批量发送过一次后，找出其中无效的收信人并剔除之很重要。<br/>
+该脚本查出无效的收信人，并将帐号添加到user_not_found目录下的各个以邮局域名命名的文本中。<br/>
+比如所有163.com的无效邮箱位于user_not_found/163.com中，所有sina.com的无效邮箱位于user_not_found/sina.com中，以此类推。<br/>
+可以使用
+<pre class="brush: bash">
+./del_invalid_user_from_DB.sh
+</pre>
+这个脚本将上面输出的文本中的帐号从数据库中删除。删除后文本也会清空。<br/>
+<br/>
+2.没有2了。。。。。 <br/>
+<br/>
+注意：<br/>
+
+建议关闭emailmarketer统计bounce后删除退信的选项。<br/>
+
+ 
+
+
+</td>
+</tr>
+</tbody>
+</table>
+<script type="text/javascript">
+SyntaxHighlighter.config.bloggerMode = true; 
+SyntaxHighlighter.defaults['toolbar'] = false;  
+SyntaxHighlighter.defaults['auto-links'] = false; 
+SyntaxHighlighter.all() 
+</script>
+</body>
+
+</html>
