@@ -14,7 +14,8 @@
 */
 class Wchsh
 {
-	static function getRadamBounceAddress($string)
+	//将$string以;为分隔符分隔开，然后取其中的一段
+	static function getRandomAddress($string)
 	{
 		$array = split(";", $string);
 		$i = rand(0, count($array) - 1);
@@ -162,8 +163,8 @@ class Email_API
 	* modified by jinxiaohu,20120822
 	*  @var String
 	*/
+	var $ActualFromAddress = '';
 	var $ActualBounceAddress = '';
-	
 	/**
 	* The From name.
 	*
@@ -1500,10 +1501,11 @@ class Email_API
 	function _Send_Email(&$rcpt_to, &$to, &$subject, &$body, &$headers)
 	{
 		//2012/8/19, added by jinxiaohu
-		$this->ActualBounceAddress = Wchsh::getRadamFromAddress($this->BounceAddress); 
+		$this->ActualFromAddress = Wchsh::getRandomAddress($this->FromAddress); 
+		$this->ActualBounceAddress = Wchsh::getRandomAddress($this->BounceAddress); 
 		//原来的headers只是一个模版，从_Send_Email这个函数起，以后都替换成我们自己随机的发信人地址
-		$newheaders = str_replace('___FROM___ADDR___', $this->FromAddress, $headers);
-		$newheaders = str_replace('___BOUNCE___ADDR___', $this->ActualBounceAddress, $headers);
+		$newheaders = str_replace('___FROM___ADDR___', $this->ActualFromAddress, $headers);
+		$newheaders = str_replace('___BOUNCE___ADDR___', $this->ActualBounceAddress, $newheaders);
 		
 		//over
 		

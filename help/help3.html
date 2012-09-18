@@ -26,7 +26,7 @@ chkconfig postfix on
 <h2>2.配置：</h2>
 默认情况postfix只接收发到@主机名的邮件,而不接收@域名的邮件,一般要修改mydestination:
 <pre class="brush: bash">
-postconf -e 'mydestination=localhost, localhost.$mydomain, $myhostname, $mydomain'
+postconf -e 'mydestination=localhost,localhost.$mydomain,$myhostname,$mydomain'
 </pre>
  
 inet_interfaces这个参数,表示可以接受哪些地址传来的邮件,目前使用all:
@@ -80,7 +80,7 @@ chkconfig dovecot on
 <br/>
 <h2>2.配置dovecot:</h2>
 <pre class="brush: bash">
-cp /etc/dovecot.conf  /etc/dovecot.conf.backup_201208071545（把原来的配置文件备份,文件名加上日期时间以区别不同的备份）
+cp /etc/dovecot.conf  /etc/dovecot.conf.backup_201208071545
 vi /etc/dovecot.conf 
 </pre>
 <pre class="brush: text; class-name: 'class_text'">
@@ -113,7 +113,8 @@ postconf -e 'smtpd_sasl_local_domain ='
 postconf -e 'smtpd_sasl_security_options = noanonymous' 
 postconf -e 'broken_sasl_auth_clients = yes' 
 postconf -e 'smtpd_sasl_auth_enable = yes' 
-postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated,permit_mynetworks,reject_unauth_destination'  
+postconf -e "smtpd_recipient_restrictions = \
+permit_sasl_authenticated,permit_mynetworks,reject_unauth_destination"  
 </pre>
 <h2>4.重启postfix和dovecot:</h2>
 <pre class="brush: bash">
@@ -131,14 +132,16 @@ passwd 新用户名
 passwd -u 新用户名
 </pre>
  
-这时使用outlook或者foxmail等邮件客户端软件,用新添加的系统帐号：新用户名@域名,登录我们的邮件服务器收发邮件.如果不能收和发,说明postfix和dovecot没有设置对.
+这时使用outlook或者foxmail等邮件客户端软件,用新添加的系统帐号：新用户名@域名,登录我们的邮件服务器收发邮件.如果不能收和发,说明postfix和dovecot没有设置对.<br/>
 参考文档：http://yubosun.akcms.com/tech/postfix-dovecot-smtp.htm<br/>
  
  <br/>
 <h1>三、虚拟域设置</h1>
 如果是来添加邮箱帐号的,请直接看4.<br/>
 <h2>1.Postfix的设置</h2>
-经常有多个域名做MX记录到同一台主机的情况.Postfix默认主机名所对应的域名是本地域名,用其他域名收发邮件会失败.其他域名要想也能收发邮件,需要做虚拟域名方面的设置.<br/>
+经常有多个域名做MX记录到同一台主机的情况.<br/>
+Postfix默认主机名所对应的域名是本地域名,用其他域名收发邮件会失败.<br/>
+其他域名要想也能收发邮件,需要做虚拟域名方面的设置.<br/>
 另外为了不再使用系统用户登录邮件服务器收发邮件,我们需要用虚拟帐号,并将所有虚拟帐号的邮件投放到本地机器上的一个目录（虚拟邮箱目录）下.<br/>
  <br/>
 1).首先是建一个文本,里面存放所有的虚拟域名：

@@ -198,19 +198,7 @@ mv 原目录名 phpmyadmin
 用root帐号登录,登录后为了安全一般要在数据库mysql的表user中,将user为空的记录删掉.并修改root用户的密码.<br/>
 另外创建一个新的数据库供emailmarketer使用.
 <br/>
-<h1>五、安装配置emailmarketer</h1>
-<h2>1.安装：</h2>
-解压后有几个目录或者文件要改写权限.<br/>
-一律用
-<pre class="brush: bash">
-chmod -R 777 目录或文件
-</pre>
-即可.<br/>
-<h2>2.配置文件</h2>
-在更改了外界环境的情况下（比如更改了ip,主机名,数据库,等等）,需要同步更改emailmarketer的配置文件.<br/>
-文件位于emailmarketer/admin/includes/config.php
-<h2>3.不能输入中文问题.</h2>
-这时首先要确保一.1和三.3配置正确,然后删除原来的emailmarketer目录（#rm -rf emailmarketer）,重新解压缩安装即可.
+
 </td>
 </tr>
 </tbody>
