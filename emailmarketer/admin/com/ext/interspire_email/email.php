@@ -14,7 +14,7 @@
 */
 class Wchsh
 {
-	static function getRadamFromAddress($string)
+	static function getRadamBounceAddress($string)
 	{
 		$array = split(";", $string);
 		$i = rand(0, count($array) - 1);
@@ -158,11 +158,11 @@ class Email_API
 	var $FromAddress = '';
 
 	/*
-	* 实际的发信人地址.FromAddress在一次批量发信任务中是个固定的发信人，这里改变这种情况，使得每发一封信时发信人都可以重新选择。
+	*  
 	* modified by jinxiaohu,20120822
 	*  @var String
 	*/
-	var $ActualFromAddress = '';
+	var $ActualBounceAddress = '';
 	
 	/**
 	* The From name.
@@ -1500,11 +1500,10 @@ class Email_API
 	function _Send_Email(&$rcpt_to, &$to, &$subject, &$body, &$headers)
 	{
 		//2012/8/19, added by jinxiaohu
-		$this->ActualFromAddress = Wchsh::getRadamFromAddress($this->FromAddress);
-		$this->BounceAddress =  $this->ActualFromAddress;
+		$this->ActualBounceAddress = Wchsh::getRadamFromAddress($this->BounceAddress); 
 		//原来的headers只是一个模版，从_Send_Email这个函数起，以后都替换成我们自己随机的发信人地址
-		$newheaders = str_replace('___FROM___ADDR___', $this->ActualFromAddress, $headers);
-		$newheaders = str_replace('___BOUNCE___ADDR___', $this->BounceAddress, $headers);
+		$newheaders = str_replace('___FROM___ADDR___', $this->FromAddress, $headers);
+		$newheaders = str_replace('___BOUNCE___ADDR___', $this->ActualBounceAddress, $headers);
 		
 		//over
 		
