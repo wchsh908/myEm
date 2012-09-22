@@ -1622,7 +1622,7 @@ class Email_API
 
 		if ($this->_SMTPPipeline) {
 			$cmds = array();
-			$cmds[] = "MAIL FROM:<" . $this->BounceAddress . ">";//注意：退信人就是sender，与发信人（邮件头部中的From）概念不一样
+			$cmds[] = "MAIL FROM:<" . $this->ActualBounceAddress . ">";//用实际退信人
 			$cmds[] = "RCPT TO:<" . $rcpt_to . ">";
 			$data = implode($cmds, $this->_smtp_newline);
 			if (!$this->_Put_Smtp_Connection($data)) {
@@ -1649,7 +1649,7 @@ class Email_API
 			return $this->_Send_SmtpData($rcpt_to, $to, $subject, $body, $headers);
 		}
 
-		$data = "MAIL FROM:<" . $this->BounceAddress . ">";//这里是不是写错 了？？？
+		$data = "MAIL FROM:<" . $this->ActualBounceAddress . ">";////用实际退信人
 		
 		$this->DebugMemUsage('Trying to put ' . $data);
 
