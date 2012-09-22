@@ -811,7 +811,7 @@ class Email_API
 
 		//1
 		//$headers = 'Return-Path: ' . $this->BounceAddress . $this->_newline;
-		$headers = 'Return-Path: ' . '<___BOUNCE___ADDR___>' . $this->_newline;
+		$headers .= 'Return-Path: ' . '<___BOUNCE___ADDR___>' . $this->_newline;
 
 		$headers .= 'Date: ' . date('r') . $this->_newline;
 
@@ -1561,12 +1561,12 @@ class Email_API
 			$this->DebugMemUsage('no bounce address or safe mode is on');
 		} 
 		else {
-			if (is_null($this->_sendmailparameters)) {
-				$old_from = ini_get('sendmail_from');
-				ini_set('sendmail_from', $this->BounceAddress);
-				$params = sprintf('-f%s', $this->BounceAddress);
+	//		if (is_null($this->_sendmailparameters)) {
+	//			$old_from = ini_get('sendmail_from');
+				ini_set('sendmail_from', $this->ActualBounceAddress);
+				$params = sprintf('-f%s', $this->ActualBounceAddress);
 				$this->_sendmailparameters = $params;
-			}
+	//		}
 
 			$this->DebugMemUsage('bounce address set to ' . $this->_sendmailparameters);
 
