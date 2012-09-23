@@ -27,7 +27,7 @@ checkVdomain()
 	#不能不是虚拟域
 	if [ ${1} = $myhn ] || [ ${1} = $mydm ]
 	then
-		echo "$domain is not virtual domain.We cannot manage account for it."
+		echo "失败. $domain不是虚拟域."
 		return 2
 	fi
 	return 0
@@ -92,10 +92,11 @@ vpasswdExists()
 }
 
 adddomain()
-{ 
+{
+	echo "正在添加域名$domain ..."
 	if  domaindirExists  &&  vdomainExists 
 	then	
-		echo "域名 $domain 已存在."
+		echo "[失败].域名 $domain 已存在."
 		return 3
 	else
 		if ! domaindirExists
@@ -109,23 +110,24 @@ adddomain()
 			echo "$domain" >> /etc/postfix/vdomains
 		fi
 		
-		echo "Add domain $domain succeed."
+		echo "[成功].添加域名$domain成功."
 	fi
 	return 0
 }
 
 adduser()
 {
+	echo "正在添加帐号$user@$domain ..."
 	if ! domaindirExists || ! vdomainExists
 	then
 		#连域名都不存在
-		echo "域名$domain不存在或者不完整，请先添加域名$domain."
+		echo "[失败].域名$domain不存在或者不完整，请先添加域名$domain."
 		return 6
 	else
 		if  userdirExists  &&  mailboxExists &&  vpasswdExists
 		then
 			#帐号已存在
-			echo "帐号$user@$domain已存在."
+			echo "[失败].帐号$user@$domain已存在."
 			return 7
 		else
 			#创建目录
@@ -148,7 +150,7 @@ adduser()
 				echo "$user@$domain:{plain}wchsh908:5000:5000::/home/vmail/$domain/$user/"  >> /etc/dovecot/passwd
 			fi
 			
-			echo "Add mail account $user@$domain succeed."
+			echo "[成功].添加帐号$user@$domain成功."
 		fi
 	fi
 	return 0
@@ -157,10 +159,11 @@ adduser()
 
 deluser()
 {
+	echo "正在删除帐号$user@$domain ..."
 	if  ! userdirExists  &&  ! mailboxExists &&  ! vpasswdExists
 	then
 		#帐号已存在
-		echo "帐号$user@$domain不存在."
+		echo "[失败].帐号$user@$domain不存在."
 		return 8
 	else
 		#从文本文件中删除匹配的某一行
@@ -174,7 +177,7 @@ deluser()
 		#删除密码
 		cp -f /etc/dovecot/passwd /home/tmp
 		sed '/'"$user@$domain"'/d' /home/tmp > /etc/dovecot/passwd
-		echo "Delete mail account $user@$domain succeed."
+		echo "[成功].删除帐号$user@$domain成功."
 	fi
 	
 	return 0
@@ -182,14 +185,15 @@ deluser()
 
 deldomain()
 {
+	echo "正在删除域名$domain ..."
 	if  ! domaindirExists && ! vdomainExists 
 	then	
-		echo "域名 $domain 不存在."
+		echo "[失败].域名 $domain 不存在."
 		return 4
 	elif grep -qo "@$domain" /etc/postfix/vmailbox  #这里的grep一定要用 -o
 	then
 		#不是一个空的域，里面仍然有用户
-		echo "仍有帐号在使用$domain这个域名.请先删除所有用户帐号，然后再重试."
+		echo "[失败].仍有帐号在使用$domain这个域名.请先删除所有用户帐号，然后再重试."
 		return 5
 	else
 		#从域名配置文件中删除匹配的域名
@@ -198,7 +202,7 @@ deldomain()
 		#删除目录
 		cd /home/vmail
 		rm -rf $domain
-		echo "Delete domain $domain succeed."
+		echo "[成功].删除域名$domain成功."
 	fi
 	return 0
 }

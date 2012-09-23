@@ -726,15 +726,12 @@ class Lists extends SendStudio_Functions
 			FlashMessage(GetLang('UnableToUpdateList'), SS_FLASH_MSG_ERROR, IEM::urlFor('Lists', array('Action' => 'Edit', 'id' => $listid)));
 		}
 		FlashMessage(GetLang('ListUpdated'), SS_FLASH_MSG_SUCCESS, IEM::urlFor('Lists'));
-		//2012-Sep-23,added by jinxiaohu
-		$bounceusers = $_POST['bounce_username'];
-		$arrayeusers = split(";", $bounceusers);
-		foreach ($arrayeusers as $user)
-		{
-			exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
-		}
+		$this->addbounceaccount();
 	}
 
+	//保存list的bounceemails
+	private strbounces = "";
+	
 	/**
 	 * CreateList
 	 * Displays the 'create list' form.
@@ -781,7 +778,7 @@ class Lists extends SendStudio_Functions
 					//让apach获取root权限
 					exec("/usr/bin/sudo cat /etc/postfix/vdomains", $arraydms);
 					$currtime=date('mdhi');
-					$strbounces="";
+					$this->strbounces="";
 					$i = 1;
 					//每个list给30个退信帐号。30可以换
 					while ($i <= 30)
@@ -791,11 +788,11 @@ class Lists extends SendStudio_Functions
 							if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
 							{
 								$num = $ii < 10 ?  "0".$i : $i;
-								$strbounces .= "info".$currtime.$num."@".$domain;                                                        
+								$this->strbounces .= "info".$currtime.$num."@".$domain;                                                        
 								$i ++; 
 								if ($i <= 30)                                                                                          
 								{                                                               
-									$strbounces .= ";";                                                     
+									$this->strbounces .= ";";                                                     
 								}                                                       
 								else                                                    
 								{                                                               
@@ -804,7 +801,7 @@ class Lists extends SendStudio_Functions
 							}
 						}
 					}
-					$GLOBALS['BounceEmail'] = $strbounces;
+					$GLOBALS['BounceEmail'] = $this->strbounces;
 					//$GLOBALS['BounceEmail'] = htmlspecialchars(SENDSTUDIO_BOUNCE_ADDRESS, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				}
 
@@ -911,6 +908,35 @@ class Lists extends SendStudio_Functions
 		return $this->ParseTemplate('Lists_Form', true);
 	}
 
+	private function addbounceaccount()
+	{
+		//2012-Sep-23,added by jinxiaohu
+		$bounceusers = $_POST['bounce_username'];
+		$arrayeusers = split(";", $bounceusers);
+		
+		$fp = fopen ("/tmp/list_bounce", 'a+');
+		if ($fp)
+		{
+			//写到/tmp/list_bounce这个文件，让cron去处理建帐号
+			foreach ($arrayeusers as $user)
+			{
+				fwrite($fp, $b);
+			}
+			fclose($fp);
+		}
+		else
+		{
+			//打开文件失败，只好自己建帐号
+			//这种方式慢，有可能是服务器无法响应
+			foreach ($arrayeusers as $user)
+			{
+				exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
+			}	
+		}
+		//
+		
+	}
+	
 	/**
 	 * AddList
 	 * Adds a Contact List to the system and returns to the Manage Lists screen, or redisplays the Create a List screen with an error.
@@ -1071,7 +1097,7 @@ class Lists extends SendStudio_Functions
 		$list->customfields = $customfield_assocs;
 
 		$create = $list->Create();
-
+		$this->addbounceaccount();
 		if (!$create) {
 			// Don't use a Flash Message here so that they can try again.
 			$GLOBALS['Error'] = GetLang('UnableToCreateList');
@@ -1084,16 +1110,7 @@ class Lists extends SendStudio_Functions
 		$user->SavePermissions();
 		IEM::sessionRemove('UserLists');
 		FlashMessage(GetLang('ListCreated'), SS_FLASH_MSG_SUCCESS, IEM::urlFor('Lists'));
-		/*		
-		//2012-Sep-23,added by jinxiaohu
-		$bounceusers = $_POST['bounce_username'];
-		$arrayeusers = split(";", $bounceusers);
-		foreach ($arrayeusers as $user)
-		{
-			exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
-		}
-		//
-		*/
+
 	}
 
 	/**
