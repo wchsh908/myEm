@@ -729,8 +729,6 @@ class Lists extends SendStudio_Functions
 		$this->addbounceaccount();
 	}
 
-	//保存list的bounceemails
-	private strbounces = "";
 	
 	/**
 	 * CreateList
@@ -778,7 +776,7 @@ class Lists extends SendStudio_Functions
 					//让apach获取root权限
 					exec("/usr/bin/sudo cat /etc/postfix/vdomains", $arraydms);
 					$currtime=date('mdhi');
-					$this->strbounces="";
+					$strbounces="";
 					$i = 1;
 					//每个list给30个退信帐号。30可以换
 					while ($i <= 30)
@@ -787,12 +785,12 @@ class Lists extends SendStudio_Functions
 						{
 							if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
 							{
-								$num = $ii < 10 ?  "0".$i : $i;
-								$this->strbounces .= "info".$currtime.$num."@".$domain;                                                        
+								$num = $i < 10 ?  "0".$i : $i;
+								$strbounces .= "info".$currtime.$num."@".$domain;                                                        
 								$i ++; 
 								if ($i <= 30)                                                                                          
 								{                                                               
-									$this->strbounces .= ";";                                                     
+									$strbounces .= ";";                                                     
 								}                                                       
 								else                                                    
 								{                                                               
@@ -801,7 +799,7 @@ class Lists extends SendStudio_Functions
 							}
 						}
 					}
-					$GLOBALS['BounceEmail'] = $this->strbounces;
+					$GLOBALS['BounceEmail'] = $strbounces;
 					//$GLOBALS['BounceEmail'] = htmlspecialchars(SENDSTUDIO_BOUNCE_ADDRESS, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				}
 
