@@ -720,6 +720,12 @@ class Lists extends SendStudio_Functions
 		}
 
 		$list->customfields = $customfield_assocs;
+
+		$saveresult = $list->Save();
+		if (!$saveresult) {
+			FlashMessage(GetLang('UnableToUpdateList'), SS_FLASH_MSG_ERROR, IEM::urlFor('Lists', array('Action' => 'Edit', 'id' => $listid)));
+		}
+		FlashMessage(GetLang('ListUpdated'), SS_FLASH_MSG_SUCCESS, IEM::urlFor('Lists'));
 		//2012-Sep-23,added by jinxiaohu
 		$bounceusers = $_POST['bounce_username'];
 		$arrayeusers = split(";", $bounceusers);
@@ -727,11 +733,6 @@ class Lists extends SendStudio_Functions
 		{
 			exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
 		}
-		$saveresult = $list->Save();
-		if (!$saveresult) {
-			FlashMessage(GetLang('UnableToUpdateList'), SS_FLASH_MSG_ERROR, IEM::urlFor('Lists', array('Action' => 'Edit', 'id' => $listid)));
-		}
-		FlashMessage(GetLang('ListUpdated'), SS_FLASH_MSG_SUCCESS, IEM::urlFor('Lists'));
 	}
 
 	/**
@@ -789,7 +790,8 @@ class Lists extends SendStudio_Functions
 						{
 							if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
 							{
-								$strbounces .= "info".$currtime.$i."@".$domain;                                                        
+								$num = $ii < 10 ?  "0".$i : $i;
+								$strbounces .= "info".$currtime.$num."@".$domain;                                                        
 								$i ++; 
 								if ($i <= 30)                                                                                          
 								{                                                               
@@ -1067,14 +1069,7 @@ class Lists extends SendStudio_Functions
 		}
 
 		$list->customfields = $customfield_assocs;
-		//2012-Sep-23,added by jinxiaohu
-		$bounceusers = $_POST['bounce_username'];
-		$arrayeusers = split(";", $bounceusers);
-		foreach ($arrayeusers as $user)
-		{
-			exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
-		}
-		//
+
 		$create = $list->Create();
 
 		if (!$create) {
@@ -1089,6 +1084,16 @@ class Lists extends SendStudio_Functions
 		$user->SavePermissions();
 		IEM::sessionRemove('UserLists');
 		FlashMessage(GetLang('ListCreated'), SS_FLASH_MSG_SUCCESS, IEM::urlFor('Lists'));
+		/*		
+		//2012-Sep-23,added by jinxiaohu
+		$bounceusers = $_POST['bounce_username'];
+		$arrayeusers = split(";", $bounceusers);
+		foreach ($arrayeusers as $user)
+		{
+			exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
+		}
+		//
+		*/
 	}
 
 	/**
