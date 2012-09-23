@@ -8,6 +8,7 @@ showusage()
 	echo './postaccountadmin.sh -s:  Show all current domains and mail accounts;'
 	echo './postaccountadmin.sh -a domain:  Add a virtual domain;'
 	echo './postaccountadmin.sh -a user@domain:  Add a mail account;'
+	echo './postaccountadmin.sh -a filename:  Add mail accounts(no domain) from a file(full path);'
 	echo './postaccountadmin.sh -d domain:  Delete a virtual domain;'
 	echo './postaccountadmin.sh -d user@domain: Delete a mail account;'
 	exit 1
@@ -237,7 +238,7 @@ then
 		fi
 	
 	#2.2输入的是个域名
-	elif  echo $param | grep -Eqw  "([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})"     
+	elif  ( echo $param | grep -Eqw  "([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})"  )
 	then
 		domain=$param
 		checkVdomain $domain
@@ -252,6 +253,19 @@ then
 		else
 			showusage
 		fi
+	#2.3输入的是个文件
+	elif [ -f $params ]  &&  [ "$option" = '-a' ]
+	then 
+		for element in $(cat $params)
+		do 
+			if  echo $element | grep -Eqw  "([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})" 
+			then
+				user=${element%@*}
+				domain=${element#*@} 
+				checkVdomain $domain
+				adduser
+			fi
+		done
 	else
 		showusage
 	fi
