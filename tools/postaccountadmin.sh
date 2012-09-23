@@ -11,6 +11,7 @@ showusage()
 	echo './postaccountadmin.sh -a filename:  Add mail accounts(no domain) from a file(full path);'
 	echo './postaccountadmin.sh -d domain:  Delete a virtual domain;'
 	echo './postaccountadmin.sh -d user@domain: Delete a mail account;'
+	echo './postaccountadmin.sh -a filename:  Delete mail accounts(no domain) from a file(full path);'
 	exit 1
 }
 
@@ -25,7 +26,7 @@ checkVdomain()
 	mydm=${tmp#*= }
 	
 	#不能不是虚拟域
-	if [ ${1} = $myhn ] || [ ${1} = $mydm ]
+	if [ $domain= $myhn ] || [ $domain = $mydm ]
 	then
 		echo "失败. $domain不是虚拟域."
 		return 2
@@ -208,8 +209,37 @@ deldomain()
 }
 
 
+fromfile()
+{
+	#这时的param是文件名
+	for element in $(cat $param)
+	do 
+		if  echo $element | grep -Eqw  "([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})" 
+		then
+			user=${element%@*}
+			domain=${element#*@} 
+			
+			if checkVdomain 
+			then
+				if [ "$option" = '-a' ]
+				then
+					adduser
+				elif [ "$option" = '-d' ]
+				then
+					deluser
+				else
+					showusage
+				fi
+			fi
+		fi
+	done
+}
+
+
 ########################################################################################################################
 #程序入口
+########################################################################################################################
+
 if ! [ -d /home/vmail ] 
 then
 	mkdir /home/vmail
@@ -268,18 +298,14 @@ then
 			showusage
 		fi
 	#2.3输入的是个文件
-	elif [ -f $param ]  &&  [ "$option" = '-a' ]
-	then 
-		for element in $(cat $param)
-		do 
-			if  echo $element | grep -Eqw  "([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})" 
-			then
-				user=${element%@*}
-				domain=${element#*@} 
-				checkVdomain $domain
-				adduser
-			fi
-		done
+	elif [ -f $param ] 
+	then
+		if [ -r $param ]
+		then
+			fromfile
+		else
+			echo "[失败].文件$param不可读."
+		fi
 	else
 		showusage
 	fi
