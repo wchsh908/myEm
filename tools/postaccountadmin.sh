@@ -26,7 +26,7 @@ checkVdomain()
 	mydm=${tmp#*= }
 	
 	#不能不是虚拟域
-	if [ $domain= $myhn ] || [ $domain = $mydm ]
+	if [ $domain = $myhn ] || [ $domain = $mydm ]
 	then
 		echo "失败. $domain不是虚拟域."
 		return 2
