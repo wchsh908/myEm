@@ -728,6 +728,7 @@ class Lists extends SendStudio_Functions
 		FlashMessage(GetLang('ListUpdated'), SS_FLASH_MSG_SUCCESS, IEM::urlFor('Lists'));
 	}
 
+	private $strbounces = '';
 	/**
 	 * CreateList
 	 * Displays the 'create list' form.
@@ -765,15 +766,39 @@ class Lists extends SendStudio_Functions
 			$GLOBALS['DisplayExtraMailSettings'] = 'none';
 			$GLOBALS['ShowBounceInfo'] = 'none';
 
-			if ($user->HasAccess('Lists', 'BounceSettings')) {
+			if ($user->HasAccess('Lists', 'BounceSettings')) 
+			{
 				$GLOBALS['ShowBounceInfo'] = '';
-
-				if (SENDSTUDIO_BOUNCE_ADDRESS) {
-					$GLOBALS['BounceEmail'] = htmlspecialchars(SENDSTUDIO_BOUNCE_ADDRESS, ENT_QUOTES, SENDSTUDIO_CHARSET);
+				if (SENDSTUDIO_BOUNCE_ADDRESS) 
+				{
+					//2012-Sep-23, added by jinxiaohu
+					//让apach获取root权限
+					exec("/usr/bin/sudo cat /etc/postfix/vdomains", $arraydms);
+					$currtime=date('mdhi');
+					$this->strbounces="";
+					$ii=1;
+					//每个list给30个退信帐号。30可以换
+					while ($ii <=30)
+					{
+						foreach ($arraydms as $domain)
+						{
+							if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
+							{
+								$this->$strbounces .= "info".$currtime.$ii."@".$domain.";";
+								$ii ++;
+							}
+							if ($ii > 30)
+							{
+								break;
+							}
+						}
+					}
+					$GLOBALS['BounceEmail'] = $this->strbounces;
+					//$GLOBALS['BounceEmail'] = htmlspecialchars(SENDSTUDIO_BOUNCE_ADDRESS, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				}
 
 				$GLOBALS['Bounce_Server'] = htmlspecialchars(SENDSTUDIO_BOUNCE_SERVER, ENT_QUOTES, SENDSTUDIO_CHARSET);
-				$GLOBALS['Bounce_Username'] = htmlspecialchars(SENDSTUDIO_BOUNCE_USERNAME, ENT_QUOTES, SENDSTUDIO_CHARSET);
+				$GLOBALS['Bounce_Username'] = $GLOBALS['BounceEmail']; //$GLOBALS['Bounce_Username'] = htmlspecialchars(SENDSTUDIO_BOUNCE_USERNAME, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				$GLOBALS['Bounce_Password'] = htmlspecialchars(@base64_decode(SENDSTUDIO_BOUNCE_PASSWORD), ENT_QUOTES, SENDSTUDIO_CHARSET);
 
 				if (SENDSTUDIO_BOUNCE_EXTRASETTINGS) {
@@ -931,8 +956,8 @@ class Lists extends SendStudio_Functions
 				 */
 					if (isset($_POST['BounceEmail'])) {
 						$bounceemails = $_POST['BounceEmail'];
-						$array = split(";", $bounceemails);
-						foreach ($array as $tempBounceEmail)
+						$arrayemails = split(";", $bounceemails);
+						foreach ($arrayemails as $tempBounceEmail)
 						{
 							//验证bounce邮箱地址格式是否有效
 							if (!$subscriber_api->ValidEmail($tempBounceEmail)) 
@@ -1033,7 +1058,12 @@ class Lists extends SendStudio_Functions
 		}
 
 		$list->customfields = $customfield_assocs;
-
+		$bounceemails = $_POST['BounceEmail'];
+		$arrayemails = split(";", $bounceemails);
+		foreach ($arrayemails as $tempBounceEmail)
+		{
+			exec("/usr/bin/sudo  /bin/sh  /var/www/html/postaccountadmin.sh -a $tempBounceEmail");
+		}
 		$create = $list->Create();
 
 		if (!$create) {
