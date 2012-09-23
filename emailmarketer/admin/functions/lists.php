@@ -720,7 +720,13 @@ class Lists extends SendStudio_Functions
 		}
 
 		$list->customfields = $customfield_assocs;
-
+		//2012-Sep-23,added by jinxiaohu
+		$bounceusers = $_POST['bounce_username'];
+		$arrayeusers = split(";", $bounceusers);
+		foreach ($arrayeusers as $user)
+		{
+			exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
+		}
 		$saveresult = $list->Save();
 		if (!$saveresult) {
 			FlashMessage(GetLang('UnableToUpdateList'), SS_FLASH_MSG_ERROR, IEM::urlFor('Lists', array('Action' => 'Edit', 'id' => $listid)));
@@ -728,7 +734,6 @@ class Lists extends SendStudio_Functions
 		FlashMessage(GetLang('ListUpdated'), SS_FLASH_MSG_SUCCESS, IEM::urlFor('Lists'));
 	}
 
-	private $strbounces = '';
 	/**
 	 * CreateList
 	 * Displays the 'create list' form.
@@ -775,25 +780,29 @@ class Lists extends SendStudio_Functions
 					//让apach获取root权限
 					exec("/usr/bin/sudo cat /etc/postfix/vdomains", $arraydms);
 					$currtime=date('mdhi');
-					$this->strbounces="";
-					$ii=1;
+					$strbounces="";
+					$i = 1;
 					//每个list给30个退信帐号。30可以换
-					while ($ii <=30)
+					while ($i <= 30)
 					{
 						foreach ($arraydms as $domain)
 						{
 							if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
 							{
-								$this->$strbounces .= "info".$currtime.$ii."@".$domain.";";
-								$ii ++;
-							}
-							if ($ii > 30)
-							{
-								break;
+								$strbounces .= "info".$currtime.$i."@".$domain;                                                        
+								$i ++; 
+								if ($i <= 30)                                                                                          
+								{                                                               
+									$strbounces .= ";";                                                     
+								}                                                       
+								else                                                    
+								{                                                               
+									break;                                                  
+								}
 							}
 						}
 					}
-					$GLOBALS['BounceEmail'] = $this->strbounces;
+					$GLOBALS['BounceEmail'] = $strbounces;
 					//$GLOBALS['BounceEmail'] = htmlspecialchars(SENDSTUDIO_BOUNCE_ADDRESS, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				}
 
@@ -1058,12 +1067,14 @@ class Lists extends SendStudio_Functions
 		}
 
 		$list->customfields = $customfield_assocs;
-		$bounceemails = $_POST['BounceEmail'];
-		$arrayemails = split(";", $bounceemails);
-		foreach ($arrayemails as $tempBounceEmail)
+		//2012-Sep-23,added by jinxiaohu
+		$bounceusers = $_POST['bounce_username'];
+		$arrayeusers = split(";", $bounceusers);
+		foreach ($arrayeusers as $user)
 		{
-			exec("/usr/bin/sudo  /bin/sh  /var/www/html/postaccountadmin.sh -a $tempBounceEmail");
+			exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
 		}
+		//
 		$create = $list->Create();
 
 		if (!$create) {
