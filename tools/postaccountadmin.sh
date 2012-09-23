@@ -96,7 +96,6 @@ adddomain()
 	if  domaindirExists  &&  vdomainExists 
 	then	
 		echo "域名 $domain 已存在."
-		echo "Quit."
 		return 3
 	else
 		if ! domaindirExists
@@ -121,14 +120,12 @@ adduser()
 	then
 		#连域名都不存在
 		echo "域名$domain不存在或者不完整，请先添加域名$domain."
-		echo "Quit."
 		return 6
 	else
 		if  userdirExists  &&  mailboxExists &&  vpasswdExists
 		then
 			#帐号已存在
 			echo "帐号$user@$domain已存在."
-			echo "Quit."
 			return 7
 		else
 			#创建目录
@@ -164,7 +161,6 @@ deluser()
 	then
 		#帐号已存在
 		echo "帐号$user@$domain不存在."
-		echo "Quit."
 		return 8
 	else
 		#从文本文件中删除匹配的某一行
@@ -189,13 +185,11 @@ deldomain()
 	if  ! domaindirExists && ! vdomainExists 
 	then	
 		echo "域名 $domain 不存在."
-		echo "Quit."
 		return 4
 	elif grep -qo "@$domain" /etc/postfix/vmailbox  #这里的grep一定要用 -o
 	then
 		#不是一个空的域，里面仍然有用户
 		echo "仍有帐号在使用$domain这个域名.请先删除所有用户帐号，然后再重试."
-		echo "Quit."
 		return 5
 	else
 		#从域名配置文件中删除匹配的域名
@@ -270,9 +264,9 @@ then
 			showusage
 		fi
 	#2.3输入的是个文件
-	elif [ -f $params ]  &&  [ "$option" = '-a' ]
+	elif [ -f $param ]  &&  [ "$option" = '-a' ]
 	then 
-		for element in $(cat $params)
+		for element in $(cat $param)
 		do 
 			if  echo $element | grep -Eqw  "([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})" 
 			then
@@ -290,3 +284,5 @@ then
 else
 	showusage
 fi
+
+echo "Quit."
