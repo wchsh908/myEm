@@ -15,6 +15,7 @@ showusage()
 }
 
 #检查确保输入的域名必须是虚拟域
+#参数：1.域名
 checkVdomain()
 {
 	#获取postfix中设置的myhostname和mydomain，不能输入这两个域
@@ -27,8 +28,9 @@ checkVdomain()
 	if [ ${1} = $myhn ] || [ ${1} = $mydm ]
 	then
 		echo "$domain is not virtual domain.We cannot manage account for it."
-		exit 2
+		return 2
 	fi
+	return 0
 }
 
 #显示这台机器上所有的邮箱域名和用户帐号
@@ -55,28 +57,35 @@ showallaccounts()
 			i=$(($i+1))
 		fi
 	done
+	
+	return 0
 }
 
+#检查某域名的目录是否已经建立
 domaindirExists()
 {
 	[ -d /home/vmail/$domain ]
 }
 
+#检查某帐号的mailbox是否已经建立
 userdirExists()
 {
 	[ -d /home/vmail/$domain/$user/Maildir ]
 }
 
+#检查某域名是否记录到postfix的配置文本vdomains中
 vdomainExists()
 {
 	grep -Eqw "^$domain" /etc/postfix/vdomains
 }
 
+#检查某帐号是否记录到postfix的配置文本vmailbox中
 mailboxExists()
 {
-	grep -Eqw "$user@$domain" /etc/postfix/vmailbox
+	grep -qw "$user@$domain" /etc/postfix/vmailbox
 }
 
+#检查某帐号是否记录到dovecot的配置文本passwd中
 vpasswdExists()
 {
 	grep -qo "$user@$domain" /etc/dovecot/passwd 
@@ -88,7 +97,7 @@ adddomain()
 	then	
 		echo "域名 $domain 已存在."
 		echo "Quit."
-		exit 3
+		return 3
 	else
 		if ! domaindirExists
 		then
@@ -103,6 +112,7 @@ adddomain()
 		
 		echo "Add domain $domain succeed."
 	fi
+	return 0
 }
 
 adduser()
@@ -112,14 +122,14 @@ adduser()
 		#连域名都不存在
 		echo "域名$domain不存在或者不完整，请先添加域名$domain."
 		echo "Quit."
-		exit 6
+		return 6
 	else
 		if  userdirExists  &&  mailboxExists &&  vpasswdExists
 		then
 			#帐号已存在
 			echo "帐号$user@$domain已存在."
 			echo "Quit."
-			exit 7
+			return 7
 		else
 			#创建目录
 			if  ! userdirExists
@@ -144,6 +154,7 @@ adduser()
 			echo "Add mail account $user@$domain succeed."
 		fi
 	fi
+	return 0
 }
 
 
@@ -154,7 +165,7 @@ deluser()
 		#帐号已存在
 		echo "帐号$user@$domain不存在."
 		echo "Quit."
-		exit 8
+		return 8
 	else
 		#从文本文件中删除匹配的某一行
 		#删除目录
@@ -169,6 +180,8 @@ deluser()
 		sed '/'"$user@$domain"'/d' /home/tmp > /etc/dovecot/passwd
 		echo "Delete mail account $user@$domain succeed."
 	fi
+	
+	return 0
 }
 
 deldomain()
@@ -177,13 +190,13 @@ deldomain()
 	then	
 		echo "域名 $domain 不存在."
 		echo "Quit."
-		exit 4
+		return 4
 	elif grep -qo "@$domain" /etc/postfix/vmailbox  #这里的grep一定要用 -o
 	then
 		#不是一个空的域，里面仍然有用户
 		echo "仍有帐号在使用$domain这个域名.请先删除所有用户帐号，然后再重试."
 		echo "Quit."
-		exit 5
+		return 5
 	else
 		#从域名配置文件中删除匹配的域名
 		cp -f /etc/postfix/vdomains /home/tmp
@@ -193,8 +206,11 @@ deldomain()
 		rm -rf $domain
 		echo "Delete domain $domain succeed."
 	fi
+	return 0
 }
 
+
+########################################################################################################################
 #程序入口
 if ! [ -d /home/vmail ] 
 then
