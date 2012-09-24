@@ -21,7 +21,6 @@ class Wchsh
 		$i = rand(0, count($array) - 1);
 		return $array[$i];
 	}
-
 }
 
 class Email_API
