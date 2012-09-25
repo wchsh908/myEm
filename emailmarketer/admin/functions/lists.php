@@ -774,7 +774,7 @@ class Lists extends SendStudio_Functions
 				{
 					//2012-Sep-23, added by jinxiaohu
 					//让apach获取root权限
-					exec("/usr/bin/sudo cat /etc/postfix/vdomains", $arraydms);
+					exec("cat /etc/postfix/vdomains", $arraydms);
 					$currtime=date('mdhi');
 					$strbounces="";
 					$i = 1;
