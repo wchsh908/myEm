@@ -910,15 +910,15 @@ class Lists extends SendStudio_Functions
 	{
 		//2012-Sep-23,added by jinxiaohu
 		$bounceusers = $_POST['bounce_username'];
-		$arrayeusers = split(";", $bounceusers);
+		$arrayusers = split(";", $bounceusers);
 		
 		$fp = fopen ("/tmp/list_bounce", 'a+');
 		if ($fp)
 		{
 			//写到/tmp/list_bounce这个文件，让cron去处理建帐号
-			foreach ($arrayeusers as $user)
+			foreach ($arrayusers as $user)
 			{
-				fwrite($fp, $b);
+				fwrite($fp, $user."\n");
 			}
 			fclose($fp);
 		}
@@ -926,7 +926,7 @@ class Lists extends SendStudio_Functions
 		{
 			//打开文件失败，只好自己建帐号
 			//这种方式慢，有可能是服务器无法响应
-			foreach ($arrayeusers as $user)
+			foreach ($arrayusers as $user)
 			{
 				exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
 			}	
