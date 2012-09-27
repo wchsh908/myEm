@@ -210,6 +210,7 @@ fromfile()
 				adduser
 			else
 				deluser
+			fi
 		fi
 	done
 }
