@@ -33,35 +33,6 @@ checkVdomain()
 	fi
 	return 0
 }
-
-#显示这台机器上所有的邮箱域名和用户帐号
-showallaccounts()
-{
-	echo 'Here are all the domains and user accounts:'
-	i=1
-	maildir=/home/vmail
-	for filedomain in $maildir/*
-	do
-		if [ -d "$filedomain" ]
-		then
-			basedomain=$(echo $filedomain | sed "s!$maildir/!!")
-			echo "$i. $basedomain:"	
-			for fileuser in $filedomain/*
-			do
-				if  [ -d "$fileuser" ]
-				then
-					baseuser=$(echo $fileuser | sed "s!$filedomain/!!")
-					echo "	$baseuser"'@'"$basedomain"
-				fi
-			done
-			echo
-			i=$(($i+1))
-		fi
-	done
-	
-	return 0
-}
-
 #检查某域名的目录是否已经建立
 domaindirExists()
 {
@@ -91,6 +62,41 @@ vpasswdExists()
 {
 	grep -qo "$user@$domain" /etc/dovecot/passwd 
 }
+
+#显示这台机器上所有的邮箱域名和用户帐号
+showallaccounts()
+{
+	echo 'Here are all the domains and user accounts:'
+	i=1
+	maildir=/home/vmail
+	for filedomain in $maildir/*
+	do
+		if [ -d "$filedomain" ]
+		then
+			domain=$(echo $filedomain | sed "s!$maildir/!!")
+			if vdomainExists	#不仅要在文件夹中存在，还要在vdomains配置文件中存在
+			then
+				echo "$i. $domain:"	
+				for fileuser in $filedomain/*
+				do
+					if  [ -d "$fileuser" ]
+					then
+						user=$(echo $fileuser | sed "s!$filedomain/!!")
+						if mailboxExists && vpasswdExists
+						then
+							echo "	$user@$domain"
+						fi
+					fi
+				done
+				echo
+				i=$(($i+1))
+			fi
+		fi
+	done
+	
+	return 0
+}
+
 
 adddomain()
 {
@@ -199,7 +205,8 @@ deldomain()
 	else
 		#从域名配置文件中删除匹配的域名
 		cp -f /etc/postfix/vdomains /home/tmp
-		sed '/'"$domain"'/d' /home/tmp > /etc/postfix/vdomains
+		#还是有bug的
+		sed "/^$domain/d" /home/tmp > /etc/postfix/vdomains
 		#删除目录
 		cd /home/vmail
 		rm -rf $domain
@@ -239,7 +246,7 @@ fromfile()
 ########################################################################################################################
 #程序入口
 ########################################################################################################################
-
+	
 if ! [ -d /home/vmail ] 
 then
 	mkdir /home/vmail

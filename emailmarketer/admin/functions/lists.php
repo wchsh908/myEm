@@ -729,6 +729,27 @@ class Lists extends SendStudio_Functions
 		$this->addbounceaccount();
 	}
 
+	//2012-Sep-23, added by jinxiaohu
+	private function getnewEaddress()
+	{
+		$strbounces="";
+		$i = rand(1, 30);
+		if ($i < 10)
+			$i = "0".$i;
+		$separator = "";
+		exec("cat /etc/postfix/vdomains", $arraydms);
+		//给每个list分配帐号
+		foreach ($arraydms as $domain)
+		{
+			if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
+			{
+				if ($strbounces != "")
+					$separator = ";";
+				$strbounces .= $separator."info".$i."@".$domain;
+			}
+		}
+		return $strbounces;
+	}
 	
 	/**
 	 * CreateList
@@ -773,33 +794,7 @@ class Lists extends SendStudio_Functions
 				if (SENDSTUDIO_BOUNCE_ADDRESS) 
 				{
 					//2012-Sep-23, added by jinxiaohu
-					//让apach获取root权限
-					exec("cat /etc/postfix/vdomains", $arraydms);
-					$currtime=date('mdhi');
-					$strbounces="";
-					$i = 1;
-					//每个list给30个退信帐号。30可以换
-					while ($i <= 30)
-					{
-						foreach ($arraydms as $domain)
-						{
-							if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
-							{
-								$num = $i < 10 ?  "0".$i : $i;
-								$strbounces .= "info".$currtime.$num."@".$domain;                                                        
-								$i ++; 
-								if ($i <= 30)                                                                                          
-								{                                                               
-									$strbounces .= ";";                                                     
-								}                                                       
-								else                                                    
-								{                                                               
-									break;                                                  
-								}
-							}
-						}
-					}
-					$GLOBALS['BounceEmail'] = $strbounces;
+					$GLOBALS['BounceEmail'] = $this->getnewEaddress();
 					//$GLOBALS['BounceEmail'] = htmlspecialchars(SENDSTUDIO_BOUNCE_ADDRESS, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				}
 
@@ -931,8 +926,6 @@ class Lists extends SendStudio_Functions
 				exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
 			}	
 		}
-		//
-		
 	}
 	
 	/**
