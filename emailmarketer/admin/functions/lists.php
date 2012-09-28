@@ -903,6 +903,7 @@ class Lists extends SendStudio_Functions
 
 	private function addbounceaccount()
 	{
+		/*
 		//2012-Sep-23,added by jinxiaohu
 		$bounceusers = $_POST['bounce_username'];
 		$arrayusers = split(";", $bounceusers);
@@ -926,6 +927,7 @@ class Lists extends SendStudio_Functions
 				exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
 			}	
 		}
+		*/
 	}
 	
 	/**

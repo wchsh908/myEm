@@ -95,10 +95,10 @@ adddomain()
 {
 	echo "正在添加域名$domain ..."
 	if ! isavdomain; then
-		echo "[失败]. $domain不能做为虚拟域."
+		echo "[失败].域名$domain不能做为虚拟域."
 		return 2
 	elif  domaindirExists  &&  vdomainExists; then	
-		echo "[失败].域名 $domain 已存在."
+		echo "[失败].域名$domain已存在."
 		return 3
 	else
 		if ! domaindirExists; then
@@ -117,7 +117,7 @@ adduser()
 {
 	echo "正在添加帐号$user@$domain ..."
 	if ! isavdomain; then
-		echo "[失败]. $domain不能做为虚拟域."
+		echo "[失败].域名$domain不能做为虚拟域."
 		return 2
 	elif ! domaindirExists || ! vdomainExists; then
 		#连域名都不存在
@@ -259,6 +259,8 @@ elif (( $# == 2 )) && ( [  ${1} = '-a' ] || [  ${1} = '-d' ] ); then
 		else
 			deldomain
 		fi
+	else
+		showusage
 	fi
 #3.不是1个或2个参数都报错
 else
