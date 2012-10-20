@@ -31,7 +31,7 @@ if (( $# == 1 )); then
 				fi;
 			else
 				echo "错误！$domain从格式上讲不是一个有效的域名。"
-				$domain$'\t'"fmt"  >> $output
+				echo $domain$'\t'"fmt"  >> $output
 			fi
 		done
 	else
