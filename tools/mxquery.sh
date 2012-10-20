@@ -20,6 +20,7 @@ if (( $# == 1 )); then
 		for element in $(cat $filename)
 		do
 			domain=${element#*@}
+			echo
 			echo "正在验证$domain:"	
 			if  echo $domain | grep -Eqw  "([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})" ; then
 				answer=$(dig -t mx $domain +short)
