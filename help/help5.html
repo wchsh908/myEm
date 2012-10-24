@@ -16,13 +16,12 @@
 <tr>
 <td>
 
- 这里介绍几个工具，它们都放在/var/www/html/tools目录下。
-<h1>一、Postfix的虚拟域帐号管理脚本</h1>
-该脚本叫postaccountadmin.sh，用
-<pre class="brush: bash">
-cd /var/www/html/tools
-</pre>
-即可运行。用法是：<br/><br/>
+
+这里介绍几个工具，它们都放在/var/www/html/tools目录下。
+<h1>一、帐号相关</h1>
+<h2>1、Postfix的虚拟域帐号管理脚本</h2>
+该脚本位于/var/www/html/tools/account/postaccountadmin.sh<br/>
+用法是：<br/>
 <pre class="brush: bash">
 ./postaccountadmin.sh -s
 </pre>
@@ -31,11 +30,14 @@ cd /var/www/html/tools
 ./postaccountadmin.sh -a domain
 </pre>
 向系统添加一个虚拟域。不能重复添加。<br/><br/>
-
 <pre class="brush: bash">
 ./postaccountadmin.sh -a user@domain
 </pre>
 向系统添加一个邮箱帐号。必须确保domain已经添加了，而user还没有添加。<br/><br/>
+<pre class="brush: bash">
+./postaccountadmin.sh -a 文件名
+</pre>
+将若干个账号存放在一个文件中，一行一个账号。向系统批量添加这些邮箱帐号。<br/><br/>
 
 <pre class="brush: bash">
 ./postaccountadmin.sh -d user@dommain
@@ -46,8 +48,24 @@ cd /var/www/html/tools
 ./postaccountadmin.sh -d domain
 </pre>
 从系统中删除一个域名。必须先确保该域名下没有用户了。<br/><br/>
-  
-<h1>二、轮换源IP脚本</h1>
+<pre class="brush: bash">
+./postaccountadmin.sh -d 文件名
+</pre>
+将若干个账号存放在一个文件中，一行一个账号。从系统中批量添加这些邮箱帐号。<br/><br/>
+
+<h2>2、验证域名MX记录有效性脚本</h2>
+用法是：<br/>
+<pre class="brush: bash">
+cd /var/www/html/tools/account
+./mxquery.sh 文件名
+</pre>
+无效的域名将结果输出到/var/www/html/result/mxresult.txt.<br/><br/>
+
+
+
+
+<h1>二、IP相关</h1>
+<h2>1.轮换源IP脚本</h2>
 在/var/www/html/tools/IP目录下<br/>
 srcIP.txt存放的是本机所有IP<br/>
 sleep_cycle.txt配置的是轮换周期<br/>
@@ -55,9 +73,21 @@ sleep_cycle.txt配置的是轮换周期<br/>
 <pre class="brush: bash">
 ./serviceip start
 </pre>
-即可轮换IP
-<br/>
-<h1>三、批量发送邮件测试脚本</h1>
+即可轮换IP<br/><br/>
+
+
+
+
+<h1>三、数据库相关</h1>
+<h2>1.导出退信的email邮箱</h2>
+位于/var/www/html/sql//subscriber_bounces.sh.直接运行即可。<br/>
+结果是从上次运行该脚本到这次运行它之间，系统收到所有退信的退信邮箱与退信原因。<br/>
+结果输出到/var/www/html/result/sql_bounceaddress_result.txt<br/><br/>
+
+
+
+
+<h1>四、批量发送邮件测试脚本</h1>
 位于mailtest目录下的mailtest.sh<br/>
 该脚本使用固定IP，以给定的速度批量给单个邮局的邮箱群发送若干时间邮件。发送完输出退信数量和延迟发送的数量。以此可以大致得出该邮局对单个IP的发送数量限制。<br/>
 用法是
@@ -69,9 +99,11 @@ cd /var/www/html/tools/mailtest
 脚本将以每分钟speed封邮件的速度发送minute分钟。<br/>
 因为测试的是对IP的影响，所以使用多个发件人很有必要。发件人名单放在from.txt中。<br/>
 收件人名单放在to.txt。<br/>
-邮件内容使用一个模版，名为mailtemplate.txt。每此发送时会对其中的一些参数如收信人、发信人做替换。（模版中的链接也应该做一些替换的，目前还没有做。）<br/>
-<br/>
-<h1>四、退信统计脚本</h1>
+邮件内容使用一个模版，名为mailtemplate.txt。每此发送时会对其中的一些参数如收信人、发信人做替换。（模版中的链接也应该做一些替换的，目前还没有做。）<br/><br/>
+
+
+
+<h1>五、退信统计脚本</h1>
 是在bounce目录下的bounce_analysis.sh。
 该脚本的用法是：
 
