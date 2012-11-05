@@ -183,9 +183,14 @@ deldomain()
 	then
 		#不是一个空的域，里面仍然有用户
 		echo "[警告].$domain这个域名下仍有一些账号，将要强行删除这些账号，然后再删除域名."
+		#删除文本
 		cp -f /etc/postfix/vmailbox /home/tmp
 		sed '/'"@$domain"'/d' /home/tmp > /etc/postfix/vmailbox
 		postmap /etc/postfix/vmailbox
+		#删除密码
+		cp -f /etc/dovecot/passwd /home/tmp
+		sed '/'"@$domain"'/d' /home/tmp > /etc/dovecot/passwd
+		#目录随着父目录一起删除 
 	fi
 	 
 	#从域名配置文件中删除匹配的域名
