@@ -6,12 +6,11 @@ showusage()
 {
 	echo 'Invalid input. Usage:'
 	echo './postaccountadmin.sh -s:  Show all current domains and mail accounts;'
-	echo './postaccountadmin.sh -a domain:  Add a virtual domain;'
 	echo './postaccountadmin.sh -a user@domain:  Add a mail account;'
-	echo './postaccountadmin.sh -a filename:  Add mail accounts(no domain included) from a file(full path);'
-	echo './postaccountadmin.sh -d domain:  Delete a virtual domain;'
+	echo './postaccountadmin.sh -a filename:  Add mail accounts from a file(full path);'
 	echo './postaccountadmin.sh -d user@domain: Delete a mail account;'
-	echo './postaccountadmin.sh -d filename:  Delete mail accounts(no domain included) from a file(full path);'
+	echo './postaccountadmin.sh -d domain:  Delete a virtual domain and all mail accounts of it;'
+	echo './postaccountadmin.sh -d filename:  Delete mail accounts and domains from a file(full path);'
 	exit 1
 }
 
@@ -91,6 +90,7 @@ showallaccounts()
 }
 
 
+#adddomain仅供内部使用
 adddomain()
 {
 	echo "正在添加域名$domain ..."
@@ -119,33 +119,33 @@ adduser()
 	if ! isavdomain; then
 		echo "[失败].域名$domain不能做为虚拟域."
 		return 2
-	elif ! domaindirExists || ! vdomainExists; then
-		#连域名都不存在
-		echo "[失败].域名$domain不存在或者不完整，请先添加域名$domain."
-		return 4
 	elif  userdirExists  &&  mailboxExists &&  vpasswdExists; then
 		#帐号已存在
 		echo "[失败].帐号$user@$domain已存在."
 		return 5
-	else
-		#创建目录
-		if  ! userdirExists; then
-			mkdir /home/vmail/$domain/$user
-			mkdir /home/vmail/$domain/$user/Maildir
-			chown -R vmail:vmail /home/vmail/$domain/$user
-		fi
-		#添加文本
-		if ! mailboxExists; then
-			echo "$user@$domain     $domain/$user/Maildir/"  >>  /etc/postfix/vmailbox
-			postmap /etc/postfix/vmailbox
-		fi
-		#添加密码
-		if ! vpasswdExists; then
-			echo "$user@$domain:{plain}wchsh908:5000:5000::/home/vmail/$domain/$user/"  >> /etc/dovecot/passwd
-		fi
-		echo "[成功].添加帐号$user@$domain成功."
-		return 0
+	elif ! domaindirExists || ! vdomainExists; then
+		#连域名都不存在
+		echo "[警告].域名$domain不存在或者不完整，将要自动添加域名$domain."
+		adddomain
 	fi
+	
+	#创建目录
+	if  ! userdirExists; then
+		mkdir /home/vmail/$domain/$user
+		mkdir /home/vmail/$domain/$user/Maildir
+		chown -R vmail:vmail /home/vmail/$domain/$user
+	fi
+	#添加文本
+	if ! mailboxExists; then
+		echo "$user@$domain     $domain/$user/Maildir/"  >>  /etc/postfix/vmailbox
+		postmap /etc/postfix/vmailbox
+	fi
+	#添加密码
+	if ! vpasswdExists; then
+		echo "$user@$domain:{plain}wchsh908:5000:5000::/home/vmail/$domain/$user/"  >> /etc/dovecot/passwd
+	fi
+	echo "[成功].添加帐号$user@$domain成功."
+	return 0	
 }
 
 
@@ -153,7 +153,7 @@ deluser()
 {
 	echo "正在删除帐号$user@$domain ..."
 	if  ! userdirExists  &&  ! mailboxExists &&  ! vpasswdExists; then
-		#帐号已存在
+		#帐号不存在
 		echo "[失败].帐号$user@$domain不存在."
 		return 8
 	else
@@ -179,22 +179,23 @@ deldomain()
 	if  ! domaindirExists && ! vdomainExists ; then	
 		echo "[失败].域名 $domain 不存在."
 		return 4
-	elif grep -qo "@$domain" /etc/postfix/vmailbox  #这里的grep一定要用 -o
+	elif grep -qo "@$domain" /etc/postfix/vmailbox  #这里的grep一定要用 -o,-o表示单词的部分匹配即可
 	then
 		#不是一个空的域，里面仍然有用户
-		echo "[失败].仍有帐号在使用$domain这个域名.请先删除所有用户帐号，然后再重试."
-		return 5
-	else
-		#从域名配置文件中删除匹配的域名
-		cp -f /etc/postfix/vdomains /home/tmp
-		#还是有bug的
-		sed "/^$domain/d" /home/tmp > /etc/postfix/vdomains
-		#删除目录
-		rm -rf /home/vmail/$domain
-		echo "[成功].删除域名$domain成功."
-		return 0
+		echo "[警告]. $domain这个域名下仍有一些账号，将要强行删除这些账号，然后再删除域名."
+		cp -f /etc/postfix/vmailbox /home/tmp
+		sed '/'"@$domain"'/d' /home/tmp > /etc/postfix/vmailbox
+		postmap /etc/postfix/vmailbox
 	fi
-	
+	 
+	#从域名配置文件中删除匹配的域名
+	cp -f /etc/postfix/vdomains /home/tmp
+	#还是有bug的
+	sed "/^$domain/d" /home/tmp > /etc/postfix/vdomains
+	#删除目录
+	rm -rf /home/vmail/$domain
+	echo "[成功].删除域名$domain成功."
+	return 0 
 }
 
 
@@ -211,6 +212,13 @@ fromfile()
 			else
 				deluser
 			fi
+		elif  echo $element | grep -Eqw  "([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})"  ); then
+			domain=${element#*@}
+			if [ "$option" = '-a' ]; then
+				adddomain
+			else
+				deldomain
+			fi		
 		fi
 	done
 }
@@ -255,7 +263,7 @@ elif (( $# == 2 )) && ( [  ${1} = '-a' ] || [  ${1} = '-d' ] ); then
 	elif  ( echo $param | grep -Eqw  "([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})"  ); then
 		domain=$param
 		if [ "$option" = '-a' ]; then
-			adddomain
+			showusage
 		else
 			deldomain
 		fi
