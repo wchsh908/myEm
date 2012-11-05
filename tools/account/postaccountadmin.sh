@@ -212,7 +212,7 @@ fromfile()
 			else
 				deluser
 			fi
-		elif  echo $element | grep -Eqw  "([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})"  ); then
+		elif  echo $element | grep -Eqw  "([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})"  ; then
 			domain=${element#*@}
 			if [ "$option" = '-a' ]; then
 				adddomain
