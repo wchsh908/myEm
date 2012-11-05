@@ -4,13 +4,13 @@
 
 showusage()
 {
-	echo 'Invalid input. Usage:'
+	echo 'Usage:'
 	echo './postaccountadmin.sh -s:  Show all current domains and mail accounts;'
 	echo './postaccountadmin.sh -a user@domain:  Add a mail account;'
 	echo './postaccountadmin.sh -a filename:  Add mail accounts from a file(full path);'
 	echo './postaccountadmin.sh -d user@domain: Delete a mail account;'
 	echo './postaccountadmin.sh -d domain:  Delete a virtual domain and all mail accounts of it;'
-	echo './postaccountadmin.sh -d filename:  Delete mail accounts and domains from a file(full path);'
+	echo './postaccountadmin.sh -d filename:  Delete mail accounts or domains from a file(full path);'
 	exit 1
 }
 
@@ -182,7 +182,7 @@ deldomain()
 	elif grep -qo "@$domain" /etc/postfix/vmailbox  #这里的grep一定要用 -o,-o表示单词的部分匹配即可
 	then
 		#不是一个空的域，里面仍然有用户
-		echo "[警告]. $domain这个域名下仍有一些账号，将要强行删除这些账号，然后再删除域名."
+		echo "[警告].$domain这个域名下仍有一些账号，将要强行删除这些账号，然后再删除域名."
 		cp -f /etc/postfix/vmailbox /home/tmp
 		sed '/'"@$domain"'/d' /home/tmp > /etc/postfix/vmailbox
 		postmap /etc/postfix/vmailbox
@@ -234,9 +234,12 @@ then
 	chown -R vmail:vmail /home/vmail
 fi
 
-#1.一个参数 -s
+#1.一个参数
 if (( $# == 1 )) && [ ${1} = '-s' ]; then
 	showallaccounts		# -s显示所有域名和帐号
+	
+elif (( $# == 1 )) && [ ${1} = '-h' ]; then
+	showusage		 
 	
 #2.两个参数:添加或者删除 域名或者帐号
 elif (( $# == 2 )) && ( [  ${1} = '-a' ] || [  ${1} = '-d' ] ); then
@@ -263,15 +266,18 @@ elif (( $# == 2 )) && ( [  ${1} = '-a' ] || [  ${1} = '-d' ] ); then
 	elif  ( echo $param | grep -Eqw  "([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})"  ); then
 		domain=$param
 		if [ "$option" = '-a' ]; then
+			echo "Invalid input."
 			showusage
 		else
 			deldomain
 		fi
 	else
+		echo "Invalid input."
 		showusage
 	fi
 #3.不是1个或2个参数都报错
 else
+	echo "Invalid input."
 	showusage
 fi
 
