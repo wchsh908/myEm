@@ -5,6 +5,7 @@ if [ -f /etc/dovecot/passwd ]; then
 	mv /etc/dovecot/passwd /var/passwd
 else
 	echo > /var/passwd
+fi
 
 echo "正在删除dovecot..."
 yum -y erase dovecot
