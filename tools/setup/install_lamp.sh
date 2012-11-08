@@ -42,17 +42,18 @@ echo
 echo "---------------------------------安装phpmyadmin------------------------------------"
 echo
 
-tar -xzvf phpMyAdmin-3.5.2-all-languages.tar.gz
-mv phpMyAdmin-3.5.2-all-languages phpmyadmin
-mv phpmyadmin /var/www/html
+tar -xzvf packages/phpMyAdmin-3.5.2-all-languages.tar.gz
+mv packages/phpMyAdmin-3.5.2-all-languages packages/phpmyadmin
+mv packages/phpmyadmin /var/www/html
 
 echo
 echo "---------------------------------安装EmailMarketer------------------------------------"
 echo
 
-unzip emailmarketer.zip
+unzip packages/emailmarketer.zip
 #/var/www/html可能也有emailmarketer目录，-u使得只覆盖旧的
-cp -ru emailmarketer /var/www/html
+cp -ru packages/emailmarketer /var/www/html
+rm -rf packages/emailmarketer
 cd /var/www/html
 chmod -R a+w emailmarketer/admin/com/storage
 chmod -R a+w emailmarketer/admin/temp
