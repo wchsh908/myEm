@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo
-echo "[---------------------------------安装配置dovecot------------------------------------"
+echo "---------------------------------安装配置dovecot------------------------------------"
 echo
 
 BACKUPDIR=/etc/backup
@@ -67,12 +67,13 @@ postconf -e "virtual_gid_maps = static:5000"
 #还原域名和账号文件
 echo
 echo "[正在还原域名和账号...]"
-mv /var/vdomains /etc/postfix/vdomains  
-mv /var/vmailbox /etc/postfix/vmailbox  
+mv $BACKUPDIR/vdomains /etc/postfix/vdomains  
+mv $BACKUPDIR/vmailbox /etc/postfix/vmailbox  
 
 #重启
 echo
 echo "[正在账号数据库...]"
+newaliases
 postmap /etc/postfix/vmailbox
 
 #重启
