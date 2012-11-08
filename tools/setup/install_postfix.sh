@@ -1,26 +1,37 @@
 #!/bin/bash
 
+echo
+echo "[---------------------------------安装配置dovecot------------------------------------"
+echo
+
+BACKUPDIR=/etc/backup
+
+
 #备份文件
-echo "正在备份域名和账号..."
+echo
+echo "[正在备份域名和账号...]"
 if [ -f /etc/postfix/vdomains ];then
-	mv /etc/postfix/vdomains  /var/vdomains
+	mv /etc/postfix/vdomains  $BACKUPDIR/vdomains
 else
-	echo > /var/vdomains
+	echo > $BACKUPDIR/vdomains
 fi
 
 if [ -f /etc/postfix/vmailbox ];then
-	mv /etc/postfix/vmailbox  /var/vmailbox
+	mv /etc/postfix/vmailbox  $BACKUPDIR/vmailbox
 else
-	echo > /var/vmailbox
+	echo > $BACKUPDIR/vmailbox
 fi
 
-echo "正在删除postfix..."
+echo
+echo "[正在删除postfix...]"
 yum -y erase postfix
-echo "正在重新安装postfix..."
+echo
+echo "[正在重新安装postfix...]"
 yum -y install postfix
 chkconfig postfix on
 
-echo "正在配置postfix..."
+echo
+echo "[正在配置postfix...]"
 #基本配置
 postconf -e 'mydestination=localhost,localhost.$mydomain,$myhostname,$mydomain' 
 postconf -e 'inet_interfaces=all' 
@@ -29,8 +40,6 @@ postconf -e 'maximal_queue_lifetime = 3d'
 postconf -e 'queue_run_delay = 500s'
 postconf -e 'minimal_backoff_time = 500s'
 postconf -e 'maximal_backoff_time = 4000s'
-
-
 
 #配合dovecot的SASL配置
 postconf -e 'smtpd_sasl_type = dovecot' 
@@ -56,13 +65,21 @@ postconf -e "virtual_uid_maps = static:5000"
 postconf -e "virtual_gid_maps = static:5000"
 
 #还原域名和账号文件
-echo "正在还原域名和账号..."
+echo
+echo "[正在还原域名和账号...]"
 mv /var/vdomains /etc/postfix/vdomains  
 mv /var/vmailbox /etc/postfix/vmailbox  
 
 #重启
-echo "正在重启postfix..."
-postfix stop
-postfix start
+echo
+echo "[正在账号数据库...]"
 postmap /etc/postfix/vmailbox
 
+#重启
+echo
+echo "[正在重启postfix...]"
+postfix stop
+postfix start
+
+echo
+echo "[结束.]"
