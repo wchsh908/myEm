@@ -76,7 +76,7 @@ mv $BACKUPDIR/vmailbox /etc/postfix/vmailbox
 
 #重启
 echo
-echo "[正在账号数据库...]"
+echo "[正在更新账号数据库...]"
 newaliases
 postmap /etc/postfix/vmailbox
 
