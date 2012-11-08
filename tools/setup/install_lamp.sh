@@ -4,7 +4,9 @@ echo
 echo "---------------------------------安装配置LAMP------------------------------------"
 echo
 
-echo "正在卸载LAMP..."
+echo
+sleep 2
+echo "[正在卸载LAMP...]"
 service httpd stop
 service mysqld stop
 yum -y erase httpd php mysql mysql-server php-mysql 
@@ -12,7 +14,9 @@ yum -y erase httpd-manual mod_ssl mod_perl mod_auth_mysql
 yum -y erase php-mcrypt php-gd php-xml php-mbstring php-ldap php-pear php-xmlrpc php-imap 
 yum -y erase mysql-connector-odbc mysql-devel libdbi-dbd-mysql 
 
-echo "正在安装LAMP..."
+echo
+sleep 2
+echo "[正在安装LAMP...]"
 yum -y install httpd php mysql mysql-server php-mysql 
 yum -y install httpd-manual mod_ssl mod_perl mod_auth_mysql 
 yum -y install php-mcrypt php-gd php-xml php-mbstring php-ldap php-pear php-xmlrpc php-imap 
@@ -23,7 +27,9 @@ chkconfig mysqld on
 
 cat '<?php phpinfo(); ?>' > /var/www/html/test.php
 
-echo "正在配置MySQL..."
+echo
+sleep 2
+echo "[正在配置MySQL...]"
 echo '[mysqld]' >> /etc/my.cnf
 echo 'default-character-set=utf8' >> /etc/my.cnf
 echo '[client]' >> /etc/my.cnf
@@ -39,21 +45,23 @@ echo 'delete from mysql.user where User=""' | mysql -u root -pwchsh908
 
 
 echo
+sleep 2
 echo "---------------------------------安装phpmyadmin------------------------------------"
 echo
 
 tar -xzvf packages/phpMyAdmin-3.5.2-all-languages.tar.gz
-mv packages/phpMyAdmin-3.5.2-all-languages packages/phpmyadmin
-mv packages/phpmyadmin /var/www/html
+mv phpMyAdmin-3.5.2-all-languages packages/phpmyadmin
+mv phpmyadmin /var/www/html
 
 echo
+sleep 2
 echo "---------------------------------安装EmailMarketer------------------------------------"
 echo
 
 unzip packages/emailmarketer.zip
 #/var/www/html可能也有emailmarketer目录，-u使得只覆盖旧的
-cp -ru packages/emailmarketer /var/www/html
-rm -rf packages/emailmarketer
+cp -ru emailmarketer /var/www/html
+rm -rf emailmarketer
 cd /var/www/html
 chmod -R a+w emailmarketer/admin/com/storage
 chmod -R a+w emailmarketer/admin/temp
