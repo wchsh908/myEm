@@ -4,6 +4,14 @@ echo
 echo "---------------------------------安装配置LAMP------------------------------------"
 echo
 
+echo "正在卸载LAMP..."
+service httpd stop
+service mysqld stop
+yum -y erase httpd php mysql mysql-server php-mysql 
+yum -y erase httpd-manual mod_ssl mod_perl mod_auth_mysql 
+yum -y erase php-mcrypt php-gd php-xml php-mbstring php-ldap php-pear php-xmlrpc php-imap 
+yum -y erase mysql-connector-odbc mysql-devel libdbi-dbd-mysql 
+
 echo "正在安装LAMP..."
 yum -y install httpd php mysql mysql-server php-mysql 
 yum -y install httpd-manual mod_ssl mod_perl mod_auth_mysql 
@@ -43,11 +51,15 @@ echo "---------------------------------安装EmailMarketer----------------------
 echo
 
 unzip emailmarketer.zip
-mv emailmarketer /var/www/html
+#/var/www/html可能也有emailmarketer目录，-u使得只覆盖旧的
+cp -ru emailmarketer /var/www/html
 cd /var/www/html
 chmod -R a+w emailmarketer/admin/com/storage
 chmod -R a+w emailmarketer/admin/temp
 chmod -R a+w emailmarketer/admin/includes/config.php
 
+iptables -F
 
 echo "结束."
+
+
