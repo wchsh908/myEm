@@ -8,6 +8,10 @@ BACKUPDIR=/etc/backup
 
 
 #备份文件
+if ![ -d /etc/backup ];then
+	mkdir /etc/backup
+fi
+
 echo
 echo "[正在备份域名和账号...]"
 if [ -f /etc/postfix/vdomains ];then
