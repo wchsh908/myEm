@@ -5,31 +5,30 @@ servicedir=/var/www/html/tools/IP
 showusage()
 {
 	echo "Invalid input!Usage:"
-	echo './serviceip.sh [ stop | start | restart ] '
+	echo './serviceip [ stop | start | restart ] '
 	exit 1
 }
 
 start()
 {
-        count=$(ps aux | grep -c autochangeip.sh)
-#	echo $count
-        if (( $count == 1 ))
-        then
-                nohup $servicedir/autochangeip.sh &
+	count=$(ps aux | grep -c autochangeip.sh)
+	if (( $count == 1 ))
+	then
+		nohup $servicedir/autochangeip.sh &
 		sleep 1
-	        echo "autochangeip.sh start."
-        else
-       	        echo "Start failed: Another service ip is already running."
-                exit 2
+		echo "autochangeip.sh start."
+	else
+		echo "Start failed: Another service ip is already running."
+		exit 2
 	fi
 }
 
 
 stop()
 {
-        count=$(ps aux | grep -c autochangeip.sh)
-#	echo $count
-        if (( $count > 1 ))
+	count=$(ps aux | grep -c autochangeip.sh)
+	#	echo $count
+	if (( $count > 1 ))
 	then
 		if killall autochangeip.sh
 		then

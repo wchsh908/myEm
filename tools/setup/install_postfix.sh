@@ -4,14 +4,15 @@ echo
 echo "---------------------------------安装配置dovecot------------------------------------"
 echo
 
-BACKUPDIR=/etc/backup
+BACKUPDIR=/etc/p_d_backup
 
-
-#备份文件
-if ! [ -d /etc/backup ];then
-	mkdir /etc/backup
+if ! [ -d /etc/p_d_backup ];then
+	mkdir /etc/p_d_backup
+else
+	rm -rf /etc/p_d_backup
 fi
 
+#备份文件
 echo
 echo "[正在备份域名和账号...]"
 if [ -f /etc/postfix/vdomains ];then
@@ -29,6 +30,8 @@ fi
 echo
 echo "[正在删除postfix...]"
 yum -y erase postfix
+rm -rf /etc/postfix
+
 echo
 echo "[正在重新安装postfix...]"
 yum -y install postfix
