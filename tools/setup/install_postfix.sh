@@ -8,7 +8,7 @@ BACKUPDIR=/etc/backup
 
 
 #备份文件
-if ![ -d /etc/backup ];then
+if ! [ -d /etc/backup ];then
 	mkdir /etc/backup
 fi
 
