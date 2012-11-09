@@ -10,7 +10,7 @@ if [ -d /var/www/html/phpmyadmin ];then
 fi
 
 tar -xzvf packages/phpMyAdmin-3.5.2-all-languages.tar.gz
-mv phpMyAdmin-3.5.2-all-languages /phpmyadmin
+mv phpMyAdmin-3.5.2-all-languages phpmyadmin
 mv phpmyadmin /var/www/html
 
 echo
