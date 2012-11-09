@@ -14,11 +14,13 @@ sleep 2
 echo "---------------------------------安装EmailMarketer------------------------------------"
 echo
 
+if [ -d /var/www/html/emailmarketer ];then
+	rm -rf /var/www/html/emailmarketer
+fi
 unzip packages/emailmarketer.zip
 #/var/www/html可能也有emailmarketer目录，-u使得只覆盖旧的
-cp -ru emailmarketer /var/www/html
-rm -rf emailmarketer
-
+mv emailmarketer /var/www/html
+cp -r em_src/* /var/www/html/emailmarketer
 cd /var/www/html
 chmod -R a+w emailmarketer/admin/com/storage
 chmod -R a+w emailmarketer/admin/temp
