@@ -24,6 +24,9 @@ fi
 
 unzip packages/emailmarketer.zip
 mv emailmarketer /var/www/html
+
+sleep 2
+echo "[拷贝改动过的emailmarketer的源代码...]"
 cp -rf em_src/* /var/www/html/emailmarketer
 
 cd /var/www/html
