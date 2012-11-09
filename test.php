@@ -5,7 +5,8 @@ exec("cat /etc/postfix/vdomains", $arraydms);
 //给每个list分配帐号
 foreach ($arraydms as $domain)
 {
-	echo $arraydms;
+	echo $domain;
+	echo "\n";
 }
  ?>
 

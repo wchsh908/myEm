@@ -25,7 +25,7 @@ yum -y install mysql-connector-odbc mysql-devel libdbi-dbd-mysql
 chkconfig httpd on
 chkconfig mysqld on 
 
-cat '<?php phpinfo(); ?>' > /var/www/html/test.php
+#cat '<?php phpinfo(); ?>' > /var/www/html/test.php
 
 echo
 echo "[正在配置MySQL...]"
