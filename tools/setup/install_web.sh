@@ -1,10 +1,10 @@
 #!/bin/bash
 
 echo
-sleep 2
 echo "---------------------------------安装phpmyadmin------------------------------------"
 echo
 
+sleep 2
 if [ -d /var/www/html/phpmyadmin ];then
 	rm -rf /var/www/html/phpmyadmin
 fi
@@ -14,9 +14,9 @@ mv phpMyAdmin-3.5.2-all-languages phpmyadmin
 mv phpmyadmin /var/www/html
 
 echo
-sleep 2
 echo "---------------------------------安装EmailMarketer------------------------------------"
 echo
+sleep 2
 
 if [ -d /var/www/html/emailmarketer ];then
 	rm -rf /var/www/html/emailmarketer
