@@ -18,6 +18,7 @@ unzip packages/emailmarketer.zip
 #/var/www/html可能也有emailmarketer目录，-u使得只覆盖旧的
 cp -ru emailmarketer /var/www/html
 rm -rf emailmarketer
+
 cd /var/www/html
 chmod -R a+w emailmarketer/admin/com/storage
 chmod -R a+w emailmarketer/admin/temp
