@@ -6,7 +6,7 @@ exec("cat /etc/postfix/vdomains", $arraydms);
 foreach ($arraydms as $domain)
 {
 	echo $domain;
-	echo "\n";
+	echo "<br/>";
 }
  ?>
 
