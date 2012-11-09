@@ -5,12 +5,11 @@ echo "---------------------------------安装配置dovecot----------------------
 echo
 
 BACKUPDIR=/etc/p_d_backup
-
 if ! [ -d /etc/p_d_backup ];then
 	mkdir /etc/p_d_backup
-else
-	rm -rf /etc/p_d_backup
 fi
+rm -f /etc/p_d_backup/*
+
 
 echo
 echo "[正在备份账号密码...]"
