@@ -17,8 +17,6 @@ if (!$fp)
 {
 	echo 'cannot open file newaccount.txt<br/>';
 }
-
-
 foreach ($domainarray as $domain)
 {
 	$str = "bo_";
@@ -28,18 +26,12 @@ foreach ($domainarray as $domain)
 		$index = rand(0, 35);
 		$str .= $charray[$index];
 	}
-	$str .= "@".$domain."\n";;
+	$str .= "@".$domain;
 	echo $str;
-	//echo "<br/>";
+	echo "<br/>";
 	fwrite($fp, $str);
 }
-
-
-$fp = fopen("/var/www/html/result/newaccount.txt", 'a');
-if (!$fp)
-{
-	echo 'cannot open file newaccount.txt<br/>';
-}
+fclose($fp);
 
 
 
