@@ -6,6 +6,8 @@ showusage()
 {
 	echo 'Usage:'
 	echo './postaccountadmin.sh -s:  Show all current domains and mail accounts;'
+	echo './postaccountadmin.sh -h:  Show help for this script;'
+	echo './postaccountadmin.sh -i:  Auto create accounts made by emailmarketer;'
 	echo './postaccountadmin.sh -a user@domain:  Add a mail account;'
 	echo './postaccountadmin.sh -a filename:  Add mail accounts from a file(full path);'
 	echo './postaccountadmin.sh -d user@domain: Delete a mail account;'
@@ -240,50 +242,57 @@ then
 fi
 
 #1.一个参数
-if (( $# == 1 )) && [ ${1} = '-s' ]; then
-	showallaccounts		# -s显示所有域名和帐号
-	
-elif (( $# == 1 )) && [ ${1} = '-h' ]; then
-	showusage		 
+if (( $# == 1 )) ; then
+	if [ ${1} = '-s' ]; then
+		showallaccounts		# -s显示所有域名和帐号
+		exit 0
+	elif [ ${1} = '-h' ]; then
+		showusage
+		exit 0
+	elif [ ${1} = '-i' ]; then
+		/var/www/html/tools/account/postaccountadmin.sh -a /tmp/newaccount.txt
+		cat /dev/null > /tmp/newaccount.txt
+		exit 0
+	fi
 	
 #2.两个参数:添加或者删除 域名或者帐号
-elif (( $# == 2 )) && ( [  ${1} = '-a' ] || [  ${1} = '-d' ] ); then
+elif (( $# == 2 )) ; then 
 	option=${1}   
 	param=${2}
 	
 	#2.1输入的是个文件
-	if [ -f $param ] ; then
+	if [ -f $param ]; then
 		if [ -r $param ]; then
 			fromfile
+			exit 0
 		else
 			echo "[失败].文件$param不可读."
+			exit 1
 		fi
+		
 	#2.2输入的是个邮箱帐号
 	elif  echo $param | grep -Eqw  "([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})" ; then
 		user=${param%@*}
 		domain=${param#*@} 
-	 	if [ "$option" = '-a' ]; then
+		if [ "$option" = '-a' ]; then
 			adduser
-		else
+		elif [ "$option" = '-d' ];then
 			deluser
 		fi
+		exit 0
+		
 	#2.3输入的是个域名
 	elif  ( echo $param | grep -Eqw  "([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})"  ); then
 		domain=$param
-		if [ "$option" = '-a' ]; then
-			echo "Invalid input."
-			showusage
-		else
+		if [ "$option" = '-d' ]; then
 			deldomain
+			exit 0
 		fi
-	else
-		echo "Invalid input."
-		showusage
+
 	fi
-#3.不是1个或2个参数都报错
-else
-	echo "Invalid input."
-	showusage
 fi
 
+#其他任何不符合上述情况的都是无效的输入
+echo "Invalid input."
+showusage
 echo "Quit."
