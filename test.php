@@ -7,6 +7,11 @@ for ($i = 26; $i < 36; $i++)
 {
 	$charray[$i] = $i;
 }
+foreach ($charray as $ch)
+{
+	echo $ch;
+	echo "<br/>";
+}
 
 //打开读
 $domainarray = file("/etc/postfix/vdomains");
@@ -27,6 +32,8 @@ foreach ($domainarray as $domain)
 		$str .= $charray[$index];
 	}
 	$str .= "@".$domain;
+	echo $count;
+	echo "<br/>";
 	echo $str;
 	echo "<br/>";
 	fwrite($fp, $str);
