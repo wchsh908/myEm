@@ -915,7 +915,7 @@ class Lists extends SendStudio_Functions
 	{ 
 		//2012-Sep-23,added by jinxiaohu
 		$bounceusers = $_POST['bounce_username'];
-		$arrayusers = split(";", $bounceusers);
+		//$arrayusers = split(";", $bounceusers);
 		
 		//打开写
 		$fp = fopen("/tmp/newaccount.txt", 'a');
@@ -924,12 +924,12 @@ class Lists extends SendStudio_Functions
 			echo 'cannot open file newaccount.txt<br/>';
 		}
 		
-		foreach ($arrayusers as $newuser)
-		{
-			fwrite($fp, $newuser);
-		}
-		//$strjoin = str_replace(";", "\r", $strjoin);
-		//fwrite($fp, $strjoin,strlen($strjoin));
+		//foreach ($arrayusers as $newuser)
+		//{
+		//	fwrite($fp, $newuser);
+		//}
+		$bounceusers = str_replace(";", "\n", $bounceusers);
+		fwrite($fp, $bounceusers, strlen($bounceusers));
 		fclose($fp);
 		 
 	}
