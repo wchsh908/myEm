@@ -3,9 +3,9 @@ echo "hi,this is a test page for php.<br/>";
 
 //字符库0-9,a-z
 $charray = range('a', 'z');
-for ($i = 26; $i < 36; $i++)
+for ($i = 0; $i < 10; $i++)
 {
-	$charray[$i] = $i;
+	$charray[$i + 26] = $i;
 }
 foreach ($charray as $ch)
 {
