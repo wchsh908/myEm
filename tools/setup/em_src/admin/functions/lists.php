@@ -930,6 +930,7 @@ class Lists extends SendStudio_Functions
 		//}
 		$bounceusers = str_replace(";", "\n", $bounceusers);
 		fwrite($fp, $bounceusers, strlen($bounceusers));
+		fwrite($fp, "\n");
 		fclose($fp);
 		 
 	}
