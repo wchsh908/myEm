@@ -732,23 +732,33 @@ class Lists extends SendStudio_Functions
 	//2012-Sep-23, added by jinxiaohu
 	private function getnewEaddress()
 	{
-		$strbounces="";
-		$i = rand(1, 30);
-		if ($i < 10)
-			$i = "0".$i;
-		$separator = "";
-		exec("cat /etc/postfix/vdomains", $arraydms);
-		//给每个list分配帐号
-		foreach ($arraydms as $domain)
+		//字符库0-9,a-z
+		$charray = range('a', 'z');
+		for ($i = 0; $i < 10; $i++)
 		{
-			if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
-			{
-				if ($strbounces != "")
-					$separator = ";";
-				$strbounces .= $separator."info".$i."@".$domain;
-			}
+			$charray[$i + 26] = $i;
 		}
-		return $strbounces;
+
+		//打开读
+		$domainarray = file("/etc/postfix/vdomains");
+		$strjoin="";
+		foreach ($domainarray as $domain)
+		{
+			$str = "bo_";
+			$count = rand(10, 15);//长度
+			for ($i = 0; $i < $count; $i++)
+			{
+				$index = rand(0, 35);
+				$str .= $charray[$index];
+			}
+			$str .= "@".$domain;
+			
+			if ($strjoin == "")
+				$strjoin .= $str;	
+			else
+				$strjoin .= ";".$str;
+		}
+		return $strjoin;
 	}
 	
 	/**
@@ -902,32 +912,19 @@ class Lists extends SendStudio_Functions
 	}
 
 	private function addbounceaccount()
-	{
-		/*
+	{ 
 		//2012-Sep-23,added by jinxiaohu
 		$bounceusers = $_POST['bounce_username'];
-		$arrayusers = split(";", $bounceusers);
 		
-		$fp = fopen ("/tmp/list_bounce", 'a+');
-		if ($fp)
+		//打开写
+		$fp = fopen("/tmp/newaccount.txt", 'a');
+		if (!$fp)
 		{
-			//写到/tmp/list_bounce这个文件，让cron去处理建帐号
-			foreach ($arrayusers as $user)
-			{
-				fwrite($fp, $user."\n");
-			}
-			fclose($fp);
+			echo 'cannot open file newaccount.txt<br/>';
 		}
-		else
-		{
-			//打开文件失败，只好自己建帐号
-			//这种方式慢，有可能是服务器无法响应
-			foreach ($arrayusers as $user)
-			{
-				exec("/usr/bin/sudo  /bin/sh  /var/www/html/tools/postaccountadmin.sh -a ". $user);
-			}	
-		}
-		*/
+		$strjoin = str_replace(";", "\r", $bounceusers);
+		fwrite($fp, $strjoin,strlen($bounceusers));
+		fclose($fp);
 	}
 	
 	/**
