@@ -1,12 +1,37 @@
 <?php 
 echo "hi,this is a test page for php.<br/>";
 
+//字符库0-9,a-z
+$charray = range('a', 'z');
+for ($i = 26; $i < 36; $i++)
+{
+	$charray[$i] = $i;
+}
 
+//打开读
 $domainarray = file("/etc/postfix/vdomains");
+
+//打开写
+$fp = fopen("/var/tmp/newaccount.txt", 'a');
+if (!$fp)
+{
+	echo 'cannot open file newaccount.txt<br/>';
+}
+
+
 foreach ($domainarray as $domain)
 {
-	echo $domain;
-	echo "<br/>";
+	$str = "bo_";
+	$count = rand(10, 15);//长度
+	for ($i = 0; $i < $count; $i++)
+	{
+		$index = rand(0, 35);
+		$str .= $charray[$index];
+	}
+	$str .= "@".$domain."\n";;
+	echo $str;
+	//echo "<br/>";
+	fwrite($fp, $str);
 }
 
 
