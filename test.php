@@ -15,13 +15,7 @@ foreach ($charray as $ch)
 
 //打开读
 $domainarray = file("/etc/postfix/vdomains");
-
-//打开写
-$fp = fopen("/var/tmp/newaccount.txt", 'a');
-if (!$fp)
-{
-	echo 'cannot open file newaccount.txt<br/>';
-}
+$strjoin="";
 foreach ($domainarray as $domain)
 {
 	$str = "bo_";
@@ -32,12 +26,23 @@ foreach ($domainarray as $domain)
 		$str .= $charray[$index];
 	}
 	$str .= "@".$domain;
-	echo $count;
-	echo "<br/>";
-	echo $str;
-	echo "<br/>";
-	fwrite($fp, $str);
+	
+	if ($strjoin == "")
+		$strjoin .= $str;	
+	else
+		$strjoin .= ";".$str;
 }
+echo $strjoin;
+echo "<br/>";
+	
+//打开写
+$fp = fopen("/var/tmp/newaccount.txt", 'a');
+if (!$fp)
+{
+	echo 'cannot open file newaccount.txt<br/>';
+}
+$strjoin = str_replace(";", "\n", $strjoin);
+fwrite($fp, $strjoin);
 fclose($fp);
 
 
