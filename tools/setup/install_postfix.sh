@@ -14,6 +14,8 @@ rm -f /etc/p_d_backup/*
 #备份文件
 echo
 echo "[正在备份域名和账号...]"
+echo
+sleep 2
 if [ -f /etc/postfix/vdomains ];then
 	mv /etc/postfix/vdomains  $BACKUPDIR/vdomains
 else
@@ -28,16 +30,22 @@ fi
 
 echo
 echo "[正在删除postfix...]"
+echo
+sleep 2
 yum -y erase postfix
 rm -rf /etc/postfix
 
 echo
 echo "[正在重新安装postfix...]"
+echo
+sleep 2
 yum -y install postfix
 chkconfig postfix on
 
 echo
 echo "[正在配置postfix...]"
+echo
+sleep 2
 #基本配置
 postconf -e 'mydestination=localhost,localhost.$mydomain,$myhostname,$mydomain' 
 postconf -e 'inet_interfaces=all' 
@@ -73,18 +81,24 @@ postconf -e "virtual_gid_maps = static:5000"
 #还原域名和账号文件
 echo
 echo "[正在还原域名和账号...]"
+echo
+sleep 2
 mv $BACKUPDIR/vdomains /etc/postfix/vdomains  
 mv $BACKUPDIR/vmailbox /etc/postfix/vmailbox  
 
 #重启
 echo
 echo "[正在更新账号数据库...]"
+echo
+sleep 2
 newaliases
 postmap /etc/postfix/vmailbox
 
 #重启
 echo
 echo "[正在重启postfix...]"
+echo
+sleep 2
 postfix stop
 postfix start
 
