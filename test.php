@@ -7,11 +7,6 @@ for ($i = 0; $i < 10; $i++)
 {
 	$charray[$i + 26] = $i;
 }
-foreach ($charray as $ch)
-{
-	echo $ch;
-	echo "<br/>";
-}
 
 //打开读
 $domainarray = file("/etc/postfix/vdomains");
@@ -42,7 +37,7 @@ if (!$fp)
 	echo 'cannot open file newaccount.txt<br/>';
 }
 $strjoin = str_replace(";", "\n", $strjoin);
-fwrite($fp, $strjoin);
+fwrite($fp, $strjoin,strlen($strjoin));
 fclose($fp);
 
 
