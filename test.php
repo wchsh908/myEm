@@ -36,7 +36,7 @@ if (!$fp)
 {
 	echo 'cannot open file newaccount.txt<br/>';
 }
-$strjoin = str_replace(";", "\n", $strjoin);
+$strjoin = str_replace(";", "\r", $strjoin);
 fwrite($fp, $strjoin,strlen($strjoin));
 fclose($fp);
 
