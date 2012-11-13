@@ -813,8 +813,8 @@ class Lists extends SendStudio_Functions
 					//$GLOBALS['BounceEmail'] = htmlspecialchars(SENDSTUDIO_BOUNCE_ADDRESS, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				}
 				//2012-Nov-13, added by jinxiaohu
-				$GLOBALS['BounceEmail'] = $this->getnewEaddress();
-					
+				//$GLOBALS['BounceEmail'] = $this->getnewEaddress();
+					$GLOBALS['BounceEmail'] = "fuck you";
 				$GLOBALS['Bounce_Server'] = htmlspecialchars(SENDSTUDIO_BOUNCE_SERVER, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				$GLOBALS['Bounce_Username'] = $GLOBALS['BounceEmail']; //$GLOBALS['Bounce_Username'] = htmlspecialchars(SENDSTUDIO_BOUNCE_USERNAME, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				$GLOBALS['Bounce_Password'] = htmlspecialchars(@base64_decode(SENDSTUDIO_BOUNCE_PASSWORD), ENT_QUOTES, SENDSTUDIO_CHARSET);
