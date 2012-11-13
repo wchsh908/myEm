@@ -8,7 +8,7 @@
 <link href="styles/shCoreDefault.css" rel="stylesheet" type="text/css" /> 
 <link href="styles/css.css" rel="stylesheet" type="text/css" /> 
 
-<title>基础软件安装配置</title>
+<title>快速安装指南</title>
 </head>
 
 <body>
@@ -16,44 +16,9 @@
 <tbody>
 <tr>
 <td>
-<h1>一、系统配置</h1>
-<h2>1.CentOS安装中文语言包</h2>
-<pre class="brush: bash">
-vi /etc/sysconfig/i18n
-</pre>
-<pre class="brush: text; class-name: 'class_text'">
-LANG="zh_CN.UTF-8"
-LC_ALL="zh_CN.UTF-8"
-</pre>
-安装中文字体
-<pre class="brush: bash">
-yum install fonts-chinese.noarch
-</pre>
-重新登录后输入locale命令和date命令可以查看.<br/>
-<h2>2.修改主机名</h2>
-临时修改,用
-<pre class="brush: bash">
-hostname=你的主机名
-</pre>
-永久修改,用
-<pre class="brush: bash">
-vi /etc/sysconfig/network
-</pre>
-找到HOSTNAME所在行,改为（没有这一行则直接添加）
-<pre class="brush: text; class-name: 'class_text'">
-HOSTNAME=你的主机名
-</pre>
-<h2>3.修改时间</h2>
-<pre class="brush: bash">
-date -s "2012-08-27 02:26:45"
-</pre>
-<h2>4.目前每次开机时需要做的操作</h2>
-<pre class="brush: bash">
-iptables -F
-postfix start
-date -s "2012-08-27 02:26:45"
-</pre>
-<h2>5.安装RPM Fusion扩大yum的源</h2>
+
+<h1>快速安装指南</h1>
+<h2>1.安装RPM Fusion扩大yum的源</h2>
 首先安装EPEL：
 <pre class="brush: bash">
 wget http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm
@@ -62,142 +27,92 @@ rpm -i epel-release-5-4.noarch.rpm
 然后安装RPM Fusion
 <pre class="brush: bash">
 rpm -Uvh http://download1.rpmfusion.org/free/el/updates/5/i386/rpmfusion-free-release-5-1.noarch.rpm 
-rpm -Uvh http://download1.rpmfusion.org/nonfree/el/updates/5/i386/rpmfusion-nonfree-release-5-1.noarch.rpm
 </pre>
-安装完之后就可以通过yum下载到更多的安装包了.<br/>
-参考：http://fedoraproject.org/wiki/EPEL/FAQ <br/>
-http://rpmfusion.org/Configuration <br/><br/>
-<h1>二、安装、升级LAMP</h1>
-安装apache、php和mysql
-<pre class="brush: bash">
-yum -y install httpd php mysql mysql-server php-mysql
-</pre>
-安装httpd的扩展组件
-<pre class="brush: bash">
-yum -y install httpd-manual mod_ssl mod_perl mod_auth_mysql
-</pre>
-安装php的扩展组件
-<pre class="brush: bash">
-yum -y install php-mcrypt php-gd php-xml php-mbstring php-ldap php-pear php-xmlrpc php-imap
-</pre>
-安装mysql 的扩展组件
-<pre class="brush: bash">
-yum -y install mysql-connector-odbc mysql-devel libdbi-dbd-mysql
-</pre>
-检查php的版本号,是不是低于5.2（通过#rpm -q php）.<br/>
-如果低于5.2,需要升级以支持后面将要安装的phpmyadmin.<br/>
-由于CentOS默认的源中没有5.2版本的,我们需要从其他源上下载：
-<pre class="brush: bash">
-vi /etc/yum.repos.d/CentOS-Base.repo
-</pre>
-增加下面信息
-<pre class="brush: text; class-name: 'class_text'">
-[utterramblings] 
-name=Jason's Utter Ramblings Repo 
-baseurl=http://www.jasonlitka.com/media/EL$releasever/$basearch/ 
-enabled=1 
-gpgcheck=1 
-gpgkey=http://www.jasonlitka.com/media/RPM-GPG-KEY-jlitka
-</pre>
-然后升级php: 
-<pre class="brush: bash">
-yum update php -y 
-</pre>
-<br/>
-<h1>三、配置LAMP</h1>
-<h2>1.检测httpd和php是否已安装好</h2>
-<pre class="brush: bash">
-chkconfig httpd on
-service httpd start
-</pre>
-启动httpd后,打开http://hostname,就能看到httpd是否正常运行.<br/>
-新建一个文本,键入如下代码
-<pre class="brush: text; class-name: 'class_text'">
-<?php phpinfo(); ?>
-</pre>
-命名为test.php,放入httpd的文档根目录下（/var/www/html）,然后在本地电脑中看能否浏览.<br/>
+安装完之后就可以通过yum下载到更多的安装包了.<br/><br/>
 
-曾经出现的一个httpd不能正常启动的原因是被事先安装的防火墙屏蔽了.用
+关于EPEL和RPM的参考资料：<br/>
+http://fedoraproject.org/wiki/EPEL/FAQ <br/>
+http://rpmfusion.org/Configuration <br/><br/>
+
+<h2>2.拷贝源文件</h2>
+先安装httpd和git
 <pre class="brush: bash">
-iptables -F
+yum install -y httpd
+yum install -y git
 </pre>
-清除防火墙的所有过滤规则.<br/>
-<br/>
-<h2>2.配置mysql</h2>
-<pre class="brush: bash">
-chkconfig mysqld on
-</pre>
-mysql默认的字符集可能不支持中文.可以从这里检查：
-<pre class="brush: bash">
-mysql -u root -p
-mysql > show variables like 'character%';
-</pre>
-如果看到一堆latin1,就不对.应该都是utf8.<br/>
-先停止mysql服务：
-<pre class="brush: bash">
-service mysqld stop
-</pre>
-修改配置文件
-<pre class="brush: bash">
-vi /etc/my.cnf
-</pre>
-找到客户端配置[client] 在下面添加
-<pre class="brush: text; class-name: 'class_text'">
-default-character-set=utf8
-</pre>
-找到[mysqld] 添加
-<pre class="brush: text; class-name: 'class_text'">
-default-character-set=utf8
-</pre>
-重新启动mysql:
-<pre class="brush: bash">
-service mysqld start
-</pre>
-重新检查一下,涉及字符的都是utf8就对了.<br/>
-<br/>
-<h2>3.  MySQL忘记密码怎么办？</h2>
-首先停掉mysqld服务：
-<pre class="brush: bash">
-service mysqld stop
-</pre>
-如果 MySQL 正在运行,首先杀之：
-<pre class="brush: bash">
-killall -TERM mysqld
-</pre>
-启动 MySQL ：
-<pre class="brush: bash">
-safe_mysqld --skip-grant-tables & 
-</pre>
-就可以不需要密码就进入 MySQL 了. <br/>
-然后就是 
-<pre class="brush: bash">
-> use mysql 
-> update user set password=password("你的新密码") where user="root"; 
-> flush privileges; 
-</pre>
-重新杀 MySQL ,用正常方法启动.<br/>
-<br/>
-<h1>四、安装phpMyAdmin</h1>
-将下载的phpMyAdmin程序包（后缀名是tar.gz或者zip）上传到/var/www/html目录下.
+安装后进入httpd默认的根目录下（比如默认是/var/www/html)，从主服务器上拷贝服务器需要的各种源文件：
 <pre class="brush: bash">
 cd /var/www/html
+git init
+git pull root@218.98.60.2:/root/prj
 </pre>
-用
+这时可能会出现一些询问，回答yes。<br/>
+输入主服务器218.98.60.2上root用户的登录密码，然后开始拷贝文件。等待拷贝结束。<br/><br/>
+
+<h2>3.运行一键安装脚本</h2>
+拷贝结束后观察/var/www/html目录，这时多了一些拷贝过来的文件和目录。<br/>
+进入tools/setup，该目录下有几个shell脚本，确认其有可执行的权限，按顺序分别独立运行以下脚本：
 <pre class="brush: bash">
-tar -xzvf 文件名
+cd tools/setup
+./install_lamp.sh
+./install_web.sh	#安装phpmyadmin和emailmarketer
+./install_postfix.sh
+./install_dovecot.sh
 </pre>
-或者
+安装时观察屏幕输出，若每一步没有异常情况出现，整个软件环境安装结束。<br/><br/>
+
+<h2>4.配置网络</h2>
+来到tools/IP目录下。
 <pre class="brush: bash">
-unzip 文件名
+cd /var/www/html/tools/IP
 </pre>
-将程序包解压缩,得到一个目录.将目录重命名：
+1)把本服务器所有IP地址写到本目录下的srcIP.txt<br/>
+如果IP是连续的(比如从218.98.140.2一直到218.98.140.254)，你又懒得一个一个输入，可以用类似如下的命令将IP输入到srcIP.txt：
 <pre class="brush: bash">
-mv 原目录名 phpmyadmin
+rm -f srcIP.txt
+i=2;					#从2开始
+while (( $i < 255 ))	#到254结束
+do
+	echo 218.98.140.$i >> srcIP.txt
+	i=$(($i+1))
+done
 </pre>
-在本地电脑浏览器上输入http//hostname/phpmyadmin,即可使用.<br/>
-用root帐号登录,登录后为了安全一般要在数据库mysql的表user中,将user为空的记录删掉.并修改root用户的密码.<br/>
-另外创建一个新的数据库供emailmarketer使用.
 <br/>
+2)分配IP<br/>
+运行这个脚本，复制IP配置文件。<br/>
+<pre class="brush: bash">
+./configip.sh
+</pre>
+这时观察/etc/sysconfig/network-scripts目录，多了许多名为ifcfg-eth0:x的IP配置文件。
+检查无误后，运行
+<pre class="brush: bash">
+service network restart
+</pre>
+IP分配成功。<br/>
+
+注意这一步有风险，如果IP配置文件写的不正确，运行了service network restart后很有可能导致系统断网从而无法远程登录。<br/><br/>
+
+3)开启自动切换源IP<br/>
+运行
+<pre class="brush: bash">
+./serviceip start
+./serviceip stop
+</pre>
+分别用于开启和关闭源IP自动切换<br/>
+注意这个命令不是开机自启的，开机后要手动运行。<br/>
+同样，这个命令由于修改路由表，也会有导致系统无法远程登录的风险。<br/><br/>
+ 
+<h2>5.维护</h2>
+首先是从主服务器上拷贝的那几个源文件，其内容不要做任何的修改。<br/>
+主服务器上的源文件有更新时，需要与之同步：
+<pre class="brush: bash">
+cd /var/www/html
+git pull root@218.98.60.2:/root/prj
+</pre>
+<br/>
+其次是tools/setup下的那几个shell脚本也可用于重装。<br/>
+比如今后若要重装emailmarketer，只需运行install_web.sh即可。<br/>
+
 
 </td>
 </tr>

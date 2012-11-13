@@ -7,7 +7,8 @@
 <script type="text/javascript" src="scripts/shBrushPlain.js"></script> 
 <link href="styles/shCoreDefault.css" rel="stylesheet" type="text/css" /> 
 <link href="styles/css.css" rel="stylesheet" type="text/css" /> 
-<title>工具</title>
+
+<title>Postfix和Dovecot安装配置</title>
 </head>
 
 <body>
@@ -15,142 +16,344 @@
 <tbody>
 <tr>
 <td>
-
-
-这里介绍几个工具，它们都放在/var/www/html/tools目录下。
-<h1>一、帐号相关</h1>
-<h2>1、Postfix的虚拟域帐号管理脚本</h2>
-该脚本位于/var/www/html/tools/account/postaccountadmin.sh<br/>
-用法是：<br/>
+<h1>一、用Postfix发送邮件</h1>
+<h2>1.安装：</h2>
 <pre class="brush: bash">
-./postaccountadmin.sh -s
+yum -y install postfix
+chkconfig postfix on
 </pre>
-查看系统所有的虚拟域和邮箱帐号。<br/><br/>
-<pre class="brush: bash">
-./postaccountadmin.sh -a domain
-</pre>
-向系统添加一个虚拟域。不能重复添加。<br/><br/>
-<pre class="brush: bash">
-./postaccountadmin.sh -a user@domain
-</pre>
-向系统添加一个邮箱帐号。必须确保domain已经添加了，而user还没有添加。<br/><br/>
-<pre class="brush: bash">
-./postaccountadmin.sh -a 文件名
-</pre>
-将若干个账号存放在一个文件中，一行一个账号。向系统批量添加这些邮箱帐号。<br/><br/>
-
-<pre class="brush: bash">
-./postaccountadmin.sh -d user@dommain
-</pre>
-从系统中删除一个邮箱帐号，连同它所有的邮件会一并删除。<br/><br/>
-
-<pre class="brush: bash">
-./postaccountadmin.sh -d domain
-</pre>
-从系统中删除一个域名。必须先确保该域名下没有用户了。<br/><br/>
-<pre class="brush: bash">
-./postaccountadmin.sh -d 文件名
-</pre>
-将若干个账号存放在一个文件中，一行一个账号。从系统中批量添加这些邮箱帐号。<br/><br/>
-
-<h2>2、验证域名MX记录有效性脚本</h2>
-用法是：<br/>
-<pre class="brush: bash">
-cd /var/www/html/tools/account
-./mxquery.sh 文件名
-</pre>
-无效的域名将结果输出到/var/www/html/result/mxresult.txt.<br/><br/>
-
-
-
-
-<h1>二、IP相关</h1>
-<h2>1.轮换源IP脚本</h2>
-在/var/www/html/tools/IP目录下<br/>
-srcIP.txt存放的是本机所有IP<br/>
-sleep_cycle.txt配置的是轮换周期<br/>
-使用
-<pre class="brush: bash">
-./serviceip start
-</pre>
-即可轮换IP<br/><br/>
-
-
-
-
-<h1>三、数据库相关</h1>
-<h2>1.导出退信的email邮箱</h2>
-位于/var/www/html/sql//subscriber_bounces.sh.直接运行即可。<br/>
-结果是从上次运行该脚本到这次运行它之间，系统收到所有退信的退信邮箱与退信原因。<br/>
-结果输出到/var/www/html/result/sql_bounceaddress_result.txt<br/><br/>
-
-
-
-
-<h1>四、批量发送邮件测试脚本</h1>
-位于mailtest目录下的mailtest.sh<br/>
-该脚本使用固定IP，以给定的速度批量给单个邮局的邮箱群发送若干时间邮件。发送完输出退信数量和延迟发送的数量。以此可以大致得出该邮局对单个IP的发送数量限制。<br/>
-用法是
-
-<pre class="brush: bash">
-cd /var/www/html/tools/mailtest
-./mailtest.sh speed minute
-</pre>
-脚本将以每分钟speed封邮件的速度发送minute分钟。<br/>
-因为测试的是对IP的影响，所以使用多个发件人很有必要。发件人名单放在from.txt中。<br/>
-收件人名单放在to.txt。<br/>
-邮件内容使用一个模版，名为mailtemplate.txt。每此发送时会对其中的一些参数如收信人、发信人做替换。（模版中的链接也应该做一些替换的，目前还没有做。）<br/><br/>
-
-
-
-<h1>五、退信统计脚本</h1>
-是在bounce目录下的bounce_analysis.sh。
-该脚本的用法是：
-
-<pre class="brush: bash">
-cd /var/www/html/tools/bounce
-./bounce_analysis.sh  bounceuser1@domain1   bounceuser2@domain2 ...
-</pre>
-脚本将统计分析所输入的各退信邮箱帐号中新收到的邮件，分析退信原因，并做相关处理。<br/>
-处理后将新收到的邮件标记为已读。<br/>
-也可以不输入参数，直接使用
-
-<pre class="brush: bash">
-./bounce_analysis.sh
-</pre>
-这时将从同目录下的bounce_accounts.txt中读取退信邮箱帐号并做分析。<br/>
-
-目前实现的分析功能包括：<br/>
-1.查出无效的收信人邮箱<br/>
-有些邮局发现如果你一段时间内经常发送邮件给无效的收信人，就会认为你是在发垃圾邮件。<br/>
-所以批量发送过一次后，找出其中无效的收信人并剔除之很重要。<br/>
-该脚本查出无效的收信人，并将帐号添加到user_not_found目录下的各个以邮局域名命名的文本中。<br/>
-比如所有163.com的无效邮箱位于user_not_found/163.com中，所有sina.com的无效邮箱位于user_not_found/sina.com中，以此类推。<br/>
-可以使用
-<pre class="brush: bash">
-./del_invalid_user_from_DB.sh
-</pre>
-这个脚本将上面输出的文本中的帐号从数据库中删除。删除后文本也会清空。<br/>
 <br/>
-2.没有2了。。。。。 <br/>
-<br/>
-注意：<br/>
-
-建议关闭emailmarketer统计bounce后删除退信的选项。<br/>
-
+<h2>2.基本配置：</h2>
+默认情况postfix只接收发到@主机名的邮件,而不接收@域名的邮件,一般要修改mydestination:
+<pre class="brush: bash">
+postconf -e 'mydestination=localhost,localhost.$mydomain,$myhostname,$mydomain'
+</pre>
  
+inet_interfaces这个参数,表示可以接受哪些地址传来的邮件,目前使用all:
+<pre class="brush: bash">
+postconf -e 'inet_interfaces=all'
+</pre>
+其他一些配置:
+<pre class="brush: bash"> 
+postconf -e 'maximal_queue_lifetime = 3d'
+</pre>
+<br/>
+<h2>3.为配合dovecot，配置SASL认证</h2>
+<pre class="brush: bash"> 
+postconf -e 'home_mailbox = Maildir/'
+postconf -e 'smtpd_sasl_type = dovecot'
+postconf -e 'smtpd_sasl_path = private/auth-client'
+postconf -e 'smtpd_sasl_local_domain ='
+postconf -e 'smtpd_sasl_security_options = noanonymous'
+postconf -e 'broken_sasl_auth_clients = yes'
+postconf -e 'smtpd_sasl_auth_enable = yes'
+postconf -e "smtpd_recipient_restrictions = \
+permit_sasl_authenticated,permit_mynetworks,reject_unauth_destination" 
+</pre>
+<br/>
+<h2>4.Postfix的虚拟域设置</h2>
+如果是来添加邮箱帐号的,请直接看4.<br/>
+经常有多个域名做MX记录到同一台主机的情况.<br/>
+Postfix默认主机名所对应的域名是本地域名,用其他域名收发邮件会失败.<br/>
+其他域名要想也能收发邮件,需要做虚拟域名方面的设置.<br/>
+另外为了不再使用系统用户登录邮件服务器收发邮件,我们需要用虚拟帐号,并将所有虚拟帐号的邮件投放到本地机器上的一个目录（虚拟邮箱目录）下.<br/>
+ <br/>
+1).首先是建一个文本,存放所有的虚拟域名：
+<pre class="brush: bash">
+echo > /etc/postfix/vdomains
+</pre>
+文本的内容形如：
+<pre class="brush: text; class-name: 'class_text'">
+news360buy.com
+fuck.com
+news.fuck.com
+</pre>
+然后告诉Postfix从哪里找到这些虚拟域名：
+<pre class="brush: bash">
+postconf -e "virtual_mailbox_domains = /etc/postfix/vdomains"
+</pre>
+<br/>
+2).接下来设置虚拟邮箱的根目录：
+<pre class="brush: bash">
+postconf -e "virtual_mailbox_base= /home/vmail"
+</pre>
+<br/>
+3).然后是建一个文本,存放邮箱帐号到邮箱目录的映射：
+<pre class="brush: bash">
+echo >  /etc/postfix/vmailbox
+</pre>
+文本的内容形如：
+<pre class="brush: text; class-name: 'class_text'">
+gene@news360buy.com     news360buy.com/gene/Maildir/
+gene@fuck.com     fuck.com/gene/Maildir/
+</pre>
+注意：每次编辑完这个文本,都要运行一次
+<pre class="brush: bash">
+postmap /etc/postfix/vmailbox
+</pre>
+以更新这个映射，把它从文本转换成数据库文件.<br/>
+当然，这个映射表也要告诉给Postfix：
+<pre class="brush: bash">
+postconf -e "virtual_mailbox_maps = hash:/etc/postfix/vmailbox"
+</pre>
+<br/>
+4).创建一个系统用户和组,给Postfix的virtual MDA使用,从而成为所有的虚拟邮件文件的拥有者.
+<pre class="brush: bash">
+groupadd -g 5000 vmail
+useradd -m -g vmail -u 5000 -d /home/vmail -s /bin/bash vmail
+postconf -e "virtual_minimum_uid = 5000"
+postconf -e "virtual_uid_maps = static:5000"
+postconf -e "virtual_gid_maps = static:5000"
+</pre>
+<br/>
+5)如有必要，创建目录<br/>
+检查/home下是否有了一个vmail目录,如果没有,自己添加：
+<pre class="brush: bash">
+mkdir /home/vmail
+chown -R vmail:vmail /home/vmail
+</pre>
+检查新建帐号的目录,如果没有，也要添加：
+<pre class="brush: bash">
+cd /home
+mkdir vmail/news360buy.com
+mkdir vmail/news360buy.com/gene
+mkdir vmail/news360buy.com/gene/Maildir
+chown -R vmail:vmail vmail/news360buy.com
+</pre>
+至此Postfix的设置完成,可以使用gene@news360buy.com这个帐号发送邮件,并且它收到的邮件将保存在/home/vmail/news360buy.com/gene/Maildir目录下.但从这个目录取出邮件还需要设置dovecot.<br/><br/>
+<h2>5.与Sendmail的冲突</h2>
+如果安装了sendmail,为防止postfix与sendmail同时运行产生冲突,首先检查系统默认的MTA是什么：
+<pre class="brush: bash">
+alternatives --display mta
+</pre>
+如果不是Postfix,改成Postfix：
+<pre class="brush: bash">
+/usr/sbin/alternatives --set mta /usr/sbin/sendmail.postfix
+</pre>
+并删除sendmail:
+<pre class="brush: bash">
+yum erase sendmail
+</pre>
+重启postfix:
+<pre class="brush: bash">
+postfix stop
+postfix start
+</pre>
+<br/>
+<h2>6.最后用telnet测试Postfix能否正常使用：</h2>
+<pre class="brush: bash">
+yum -y install telnet
+yum -y install mailx
+telnet 主机名 25
+#进入交互模式
+#介绍自己
+EHLO anywordtosayhello
+mail from: root@域名
+rcpt to: 帐号@qq.com
+data
+#输入你的邮件内容,最后要另起一段以句点结束
+.
+quit
+</pre>
+检查你的邮箱里是否收到邮件,收到回一封,然后回到服务器,输入mail命令,即可看到回复的邮件.<br/><br/><br/>
+<h1>二、用dovecot收取邮件</h1>
+<h2>1.首先安装dovecot:</h2>
+<pre class="brush: bash">
+yum install dovecot
+chkconfig dovecot on
+</pre>
+<br/>
+<h2>2.配置dovecot:</h2>
+<pre class="brush: bash">
+cp /etc/dovecot.conf  /etc/dovecot.conf.backup_201208071545
+vi /etc/dovecot.conf 
+</pre>
+<pre class="brush: text; class-name: 'class_text'">
+mail_location = maildir:~/Maildir 
+disable_plaintext_auth = no 
+</pre>
+配置SASL认证：
+在mechanisms字段加上login,成为这个样子： 
+<pre class="brush: text; class-name: 'class_text'">
+mechanisms = plain login 
+</pre>
+编辑socket listen字段,成为这个样子：  
+<pre class="brush: text; class-name: 'class_text'">
+socket listen { 
+  client { 
+  path = /var/spool/postfix/private/auth-client 
+  mode = 0660 
+  user = postfix 
+  group = postfix 
+  } 
+} 
+</pre>
+<br/>
+<h2>3.dovecot的虚拟域设置</h2>
+<pre class="brush: bash">
+vi /etc/dovecot.conf
+</pre>
+1).首先是修改邮箱目录：
+<pre class="brush: text; class-name: 'class_text'">
+mail_location = maildir:/home/vmail/%d/%n/Maildir
+</pre>
+其中%d表示域名部分,%n表示人名部分.<br/>
+ <br/>
+2).找到userdb static项,修改成这样：
+<pre class="brush: text; class-name: 'class_text'">
+userdb static {
+args = uid=vmail gid=vmail home=/home/vmail/%d/%n
+}
+</pre>
+<br/>
+3).设置邮箱用户的密码认证.<br/>
+找到passdb passwd-file项,修改成这样：
+<pre class="brush: text; class-name: 'class_text'">
+passdb passwd-file {
+args = /etc/dovecot/passwd
+deny = yes
+}
+</pre>
+<br/>
+4).然后是创建一个密码文件,里面存放邮箱用户登录pop服务器时所需的密码：
+<pre class="brush: bash">
+vi /etc/dovecot/passwd
+</pre>
+文件内容形如：
+<pre class="brush: text; class-name: 'class_text'">
+gene@news360buy.com:{plain}mypassword:5000:5000::/home/vmail/news360buycom/gene/
+</pre>
+附：(为了密码文件安全,修改密码文件的权限
+<pre class="brush: bash">
+chmod 700 /etc/dovecot/passwd
+</pre>
+密码文件的格式参考http://wiki.dovecot.org/AuthDatabase/PasswdFile<br/>
+如果不想将密码写成明文,可以用其他加密方式,以plain-md5为例,用<br/>
+<pre class="brush: bash">
+dovecotpw -s PLAIN-MD5
+</pre>
+得到加密后的密码,然后将/etc/dovecot/passwd中的密码段改成{PLAIN-MD5}cryptpassword即可.)<br/>
+ <br/>
+ 5).注意事项：
+在其他软件（比如emailmarketer和foxmail等邮件客户端）中使用虚拟域的帐号收发邮件时,邮箱帐号一定要包含域名以填完整.<br/>
+比如主机名是port02.sixsmell.com,上面有个帐号叫info@foubei.com.现在在其他软件中用这个帐号时,就要写info@foubei.com,如果只写info,会被系统认为是主机的帐号info@sixsmell.com而不是虚拟域的帐号info@foubei.com.<br/>
+<br/>
+<h2>4.重启dovecot:</h2>
+<pre class="brush: bash">
+service dovecot restart
+</pre>
+<br/>
+<h2>5.最后是用telnet测试dovecot能否使用:</h2>
+<pre class="brush: bash">
+telnet localhost 110
+#进入交互模式
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
++OK Dovecot ready.
+#输入账号
+user info15@edmjiuxian.com
++OK
+#输入密码
+pass wchsh908
++OK Logged in.
+#读取邮箱中信件列表
+list
++OK 3 messages:
+1 1353
+2 3178
+3 1842
+.
+#选第2封读取
+retr 2
+#下面是信件内容
++OK 3178 octets
+Return-Path: jlugene@hotmail.com
+X-Original-To: info15@edmjiuxian.com
+Delivered-To: info15@edmjiuxian.com
+...
+</pre>
+<br/>
+<h2>6.真实域与虚拟域：</h2>
+要区别真实域与虚拟域。<br/>
+真实域就是postfix的配置中$mydomain的值，一般情况下它就是主机名所对应的域名。真实域只有一个。<br/>
+虚拟域则可以有多个。<br/>
+给真实域添加用户就是给系统添加系统用户：
+<pre class="brush: bash">
+useradd 新用户名
+</pre>
+然后设置新用户的密码：
+<pre class="brush: bash">
+passwd 新用户名
+passwd -u 新用户名
+</pre>
 
+ <br/><br/>
 
+<h1>四、Postfix队列管理</h1>
+ 
+五种队列： 输入incoming、活动active、等待deferred、故障corrupt、保留hold.<br/>
+ <br/>
+一些参数：<br/>
+Postfix每隔一段时间扫描一次等待队列,将其中可以再次投递的邮件进行再次投递,<br/>
+这个时间由queue_run_delay参数决定.<br/>
+ 
+邮件第一次投递不成功后,会得到一个时间间隔,过了间隔它才允许被再次投递,之后每次不成功都会延长这个间隔.<br/>
+另外这个时间间隔也有上下限,分别由参数minimal_backoff_time和maximal_backoff_time决定.<br/>
+ 
+邮件在等待队列里的时间不能超过maximal_queue_lifetime,超过则被退信.<br/>
+ 
+qmgr_message_active_limit限定活动队列最多可容纳多少封邮件.<br/>
+ <br/>
+ 
+队列管理工具：<br/>
+查看所有队列<br/>
+<pre class="brush: bash">
+postqueue -p
+</pre>
+<br/>
+ 删除某一个邮件
+<pre class="brush: bash">
+postsuper -d 邮件ID
+</pre>
+<br/>
+ 删除队列里所有邮件
+<pre class="brush: bash">
+postsuper -d ALL
+</pre>
+<br/>
+ 将邮件搬到无限停留的保留队列
+<pre class="brush: bash">
+postsuper -h 邮件ID
+</pre>
+<br/>
+ 将邮件移回原来的队列
+<pre class="brush: bash">
+postsuper -H 邮件队列
+</pre>
+<br/>
+ 查看一封邮件的内容
+<pre class="brush: bash">
+postcat -q 邮件ID
+</pre>
+<br/>
+立刻投递滞留在队列里的邮件 
+<pre class="brush: bash">
+postqueue -f
+</pre>
+ 
+ 
 </td>
 </tr>
 </tbody>
 </table>
+
 <script type="text/javascript">
 SyntaxHighlighter.config.bloggerMode = true; 
 SyntaxHighlighter.defaults['toolbar'] = false;  
 SyntaxHighlighter.defaults['auto-links'] = false; 
 SyntaxHighlighter.all() 
+
 </script>
 </body>
-
 </html>

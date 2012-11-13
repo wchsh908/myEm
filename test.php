@@ -46,7 +46,7 @@ $strjoin = getnewEaddress();
 echo $strjoin;
 	
 //打开写
-$fp = fopen("/tmp/emaccount/add/11.txt", 'a');
+$fp = fopen("/tmp/emadd/11.txt", 'a');
 if (!$fp)
 {
 	echo 'cannot open file 11.txt<br/>';

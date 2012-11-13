@@ -730,6 +730,7 @@ class Lists extends SendStudio_Functions
 	}
 
 	//2012-Sep-23, added by jinxiaohu
+	//用于创建或者编辑contact list时，自动生成若干个新的随即的bounce账号
 	private function getnewEaddress()
 	{
 		//字符库0-9,a-z
@@ -921,16 +922,18 @@ class Lists extends SendStudio_Functions
 		return $this->ParseTemplate('Lists_Form', true);
 	}
 
+	//2012-11-13,jinxiaohu
+	//创建或更改了contact list后，把bounce账号保存在一个文件中，供我们手动创建账号
 	private function addbounceaccount()
 	{ 
 		//2012-Sep-23,added by jinxiaohu
 		$bounceusers = $_POST['bounce_username'];
-		
+		$listname = $_POST['Name'];
 		//打开写
-		$fp = fopen("/tmp/newaccount.txt", 'a');
+		$fp = fopen("/tmp/emadd/".$listname.".txt", 'a');
 		if (!$fp)
 		{
-			echo 'cannot open file newaccount.txt<br/>';
+			echo 'cannot open file to add new account.<br/>';
 		}
 		 
 		$bounceusers = str_replace(";", "\n", $bounceusers);
@@ -1397,6 +1400,20 @@ class Lists extends SendStudio_Functions
 	 */
 	private function DeleteList($param)
 	{
+		//2012-11-13，删除一个contact list时，查出它的bounce账号，记下来存到文件中，供我们以后手动删除账号
+		$listid = (isset($_GET['id'])) ? (int)$_GET['id'] : 0;
+		$list = $this->GetApi();
+		if (!$list->Load($listid)) {
+			$GLOBALS['ErrorMessage'] = GetLang('ListDoesntExist');
+			$this->DenyAccess();
+			return;
+		}
+
+		$listname = htmlspecialchars($list->name, ENT_QUOTES, SENDSTUDIO_CHARSET);
+		$bounceemails = htmlspecialchars($list->bounceemail, ENT_QUOTES, SENDSTUDIO_CHARSET);
+		$bounceemails = str_replace(";", "\n", $bounceemails);
+
+	
 		$listApi = $this->GetApi('Lists');
 		$list = (int)$_GET['id'];
 		// ----- get jobs running for this user
@@ -1431,7 +1448,15 @@ class Lists extends SendStudio_Functions
 		}
 		// -----
 		$status = $listApi->Delete($list, $param['user']->Get('userid'));
-
+		$fp = fopen("/tmp/emdel/".$listname.".txt", 'a');
+		if (!$fp)
+		{
+			echo 'cannot open file '.$listname.'.txt<br/>';
+		}
+		fwrite($fp, $bounceemails, strlen($bounceemails));
+		fwrite($fp, "\n");
+		fclose($fp);
+	
 		if ($status) {
 			$param['user']->LoadPermissions($param['user']->userid);
 			$param['user']->RevokeListAccess($list);

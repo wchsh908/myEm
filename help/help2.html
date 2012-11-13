@@ -8,7 +8,7 @@
 <link href="styles/shCoreDefault.css" rel="stylesheet" type="text/css" /> 
 <link href="styles/css.css" rel="stylesheet" type="text/css" /> 
 
-<title>网络问题汇总</title>
+<title>系统环境</title>
 </head>
 
 <body>
@@ -16,108 +16,68 @@
 <tbody>
 <tr>
 <td>
+<h1>系统环境</h1>
+<h2>1.CentOS安装中文语言包</h2>
+<pre class="brush: bash">
+vi /etc/sysconfig/i18n
+</pre>
+<pre class="brush: text; class-name: 'class_text'">
+LANG="zh_CN.UTF-8"
+LC_ALL="zh_CN.UTF-8"
+</pre>
+安装中文字体
+<pre class="brush: bash">
+yum install fonts-chinese.noarch
+</pre>
+重新登录后输入locale命令和date命令可以查看.<br/><br/>
 
-<h1>一、IP</h1>
-<h2>1.为以太网卡添加ip别名</h2>
+<h2>2.修改主机名</h2>
+临时修改,用
 <pre class="brush: bash">
-cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0:1
-vi /etc/sysconfig/network-scripts/ifcfg-eth0:1
+hostname=你的主机名
 </pre>
+永久修改,用
+<pre class="brush: bash">
+vi /etc/sysconfig/network
+</pre>
+找到HOSTNAME所在行,改为（没有这一行则直接添加）
 <pre class="brush: text; class-name: 'class_text'">
-DEVICE=eth0:1
-IPADDR=新ip
-</pre>
-使配置生效：
-<pre class="brush: bash">
-service network restart
-</pre>
-用
-<pre class="brush: bash">
-ifconfig
-</pre>
-可以查看当前系统的网络设置，包括IP地址。<br/>
-<br/>
-<h2>2.修改源IP </h2>
-默认情况下，系统向外界发送数据包时，使用的源IP是eth0那个主IP。要想改成其他IP,需要修改静态路由表。用
-<pre class="brush: bash">
-ip route
-</pre>
-可以查看系统的静态路由表。运行
-<pre class="brush: bash">
-ip route change default src $IP dev eth0
-</pre>
-即可修改源IP。<br/>
-要想使用大量IP自动轮换的发邮件，请用我们的工具，详细用法在第四份文档中。<br/>
-<h1>二、telnet</h1>
-<h2>1.使用telnet客户端</h2>
-<pre class="brush: bash">
-yum install telnet
-</pre>
-<h2>2.telnet服务端</h2>
-<pre class="brush: bash">
-yum install telnet-server
-</pre>
-另外telnet是个不安全的协议，很多Linux系统默认禁用telnet服务。<br/>
-所以安装后测试一下让别的主机连接本主机，如果连接不上，很可能是telnet服务被禁用了。<br/>
-启用的办法：
-<pre class="brush: bash">
-vi /etc/xinetd.d/telnet
-</pre>
-将disable一行的yes改为no
-<h1>三、httpd</h1>
-<h2>1.修改httpd监听端口 </h2>
-首先用
-<pre class="brush: bash">
-semanage port -l
-</pre>
-可以查看所有被使用的端口。<br/>
-选择一个没有被其他协议使用的，0-65535之间的一个数做新端口，比如81。
-<pre class="brush: bash">
-semanage port -l | grep http_port_t
-</pre>
-查看http相关端口
-<pre class="brush: text; class-name: 'class_text'">
-http_port_t tcp 80, 443, 488, 8008, 8009, 8443
-</pre>
-如果这个新端口81不在上述范围内，添加进来
-<pre class="brush: bash">
-semanage port -a -t http_port_t tcp 81
-</pre>
-然后重启httpd
-<pre class="brush: bash">
-service httpd restart
-</pre>
-在PC中打开浏览器，输入：
-http://ip:81<br/>
-<h2>2.配置apache使其支持多个ip。</h2>
-[注]这一步现在已经不再必须。<br/>
- <br/>
-详细文档见http://httpd.apache.org/docs/current/vhosts/<br/>
-编辑apache的配置文件：
-<pre class="brush: bash">
-cp /etc/httpd/conf/httpd.conf  /etc/httpd/conf/httpd.conf.backup_201008071800
-vi /etc/httpd/conf/httpd.conf
-</pre>
-在最后添加
-<pre class="brush: text; class-name: 'class_text'">
-<VirtualHost 116.255.162.71:80>
-     DocumentRoot /var/www/html
-     ServerName 你的主机名
-     ErrorLog logs/你的主机名-error_log
-     CustomLog logs/你的主机名-access_log common
-</VirtualHost>
+HOSTNAME=你的主机名
+</pre><br/>
 
-<VirtualHost 116.255.162.64:80>
-     DocumentRoot /var/www/html_2nd_ip
-     ServerName unknownname
-     ErrorLog logs/2nd_ip-error_log
-     CustomLog logs/2nd_ip-access_log common
-</VirtualHost>
-</pre>
-重启httpd:
+<h2>3.修改时间</h2>
 <pre class="brush: bash">
-service httpd restart
+date -s "2012-08-27 02:26:45"
+</pre><br/>
+
+<h2>4.SELinux</h2>
+参考资料：http://linuxtoy.org/archives/selinux-introduction.html<br/><br/>
+
+<h2>5.防火墙</h2>
+iptables -F<br/><br/>
+
+<h2>6.加入第三方yum源</h2>
+<pre class="brush: bash">
+vi /etc/yum.repos.d/CentOS-Base.repo
 </pre>
+增加下面信息
+<pre class="brush: text; class-name: 'class_text'">
+[utterramblings] 
+name=Jason's Utter Ramblings Repo 
+baseurl=http://www.jasonlitka.com/media/EL$releasever/$basearch/ 
+enabled=1 
+gpgcheck=1 
+gpgkey=http://www.jasonlitka.com/media/RPM-GPG-KEY-jlitka
+</pre><br/>
+
+
+<h2>7.小结：目前每次开机时需要做的操作</h2>
+<pre class="brush: bash">
+iptables -F
+setenforce Permissive
+postfix start
+</pre>
+
 
 </td>
 </tr>
@@ -126,7 +86,8 @@ service httpd restart
 
 <script type="text/javascript">
 SyntaxHighlighter.config.bloggerMode = true; 
-SyntaxHighlighter.defaults['toolbar'] = false;  
+SyntaxHighlighter.defaults['toolbar'] = false; 
+SyntaxHighlighter.defaults['pad-line-numbers'] = true; 
 SyntaxHighlighter.defaults['auto-links'] = false; 
 SyntaxHighlighter.all() 
 

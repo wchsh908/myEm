@@ -34,7 +34,17 @@ chmod -R a+w emailmarketer/admin/com/storage
 chmod -R a+w emailmarketer/admin/temp
 chmod -R a+w emailmarketer/admin/includes/config.php
 
-iptables -F
+
+
+if ! [ -d /tmp/emadd ];then
+	mkdir /tmp/emadd
+fi
+if ! [ -d /tmp/emdel ];then
+	mkdir /tmp/emdel
+fi
+chmod 777 /tmp/emadd;
+chmod 777 /tmp/emadd
+
 
 echo "结束."
 

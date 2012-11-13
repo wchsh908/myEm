@@ -1,6 +1,13 @@
 #!/bin/bash
 
 echo
+echo "[正在配置系统环境...]"
+sleep 2
+iptables -F
+setenforce Permissive
+
+
+echo
 echo "---------------------------------安装配置LAMP------------------------------------"
 echo
 
@@ -30,6 +37,7 @@ chkconfig mysqld on
 echo
 echo "[正在配置MySQL...]"
 sleep 2
+#字符集问题
 echo '[mysqld]' >> /etc/my.cnf
 echo 'default-character-set=utf8' >> /etc/my.cnf
 echo '[client]' >> /etc/my.cnf
@@ -37,13 +45,14 @@ echo 'default-character-set=utf8' >> /etc/my.cnf
 
 service httpd start
 service mysqld start
-#默认没有密码，任何都可以登录mysql
+
+#密码安全问题
+#默认没有密码，任何人都可以登录mysql
 #先给root用户设置密码，然后用root登录，删除匿名用户
 mysqladmin -u root password 'wchsh908'
 echo 'update mysql.user set Password=PASSWORD("wchsh908") where User="root"'| mysql -u root -pwchsh908
 echo 'delete from mysql.user where User=""' | mysql -u root -pwchsh908
 
-iptables -F
 
 echo "结束."
 

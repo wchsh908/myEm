@@ -7,7 +7,8 @@
 <script type="text/javascript" src="scripts/shBrushPlain.js"></script> 
 <link href="styles/shCoreDefault.css" rel="stylesheet" type="text/css" /> 
 <link href="styles/css.css" rel="stylesheet" type="text/css" /> 
-<title>EmailMarketer</title>
+
+<title>网络问题汇总</title>
 </head>
 
 <body>
@@ -16,41 +17,121 @@
 <tr>
 <td>
 
-<h1>一、安装配置emailmarketer</h1>
-<h2>1.安装：</h2>
-解压后有几个目录或者文件要改写权限.<br/>
-一律用
+<h1>一、IP</h1>
+<h2>1.为以太网卡添加ip别名</h2>
 <pre class="brush: bash">
-chmod -R 777 目录或文件
+cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0:1
+vi /etc/sysconfig/network-scripts/ifcfg-eth0:1
 </pre>
-即可.<br/>
-<h2>2.配置文件</h2>
-在更改了外界环境的情况下（比如更改了ip,主机名,数据库,等等）,需要同步更改emailmarketer的配置文件.<br/>
-文件位于emailmarketer/admin/includes/config.php
-<h2>3.不能输入中文问题.</h2>
-这时首先要确保一.1和三.3配置正确,然后删除原来的emailmarketer目录（#rm -rf emailmarketer）,重新解压缩安装即可.<br/><br/>
+<pre class="brush: text; class-name: 'class_text'">
+DEVICE=eth0:1
+IPADDR=新ip
+</pre>
+使配置生效：
+<pre class="brush: bash">
+service network restart
+</pre>
+用
+<pre class="brush: bash">
+ifconfig
+</pre>
+可以查看当前系统的网络设置，包括IP地址。<br/>
+<br/>
+<h2>2.修改源IP </h2>
+默认情况下，系统向外界发送数据包时，使用的源IP是eth0那个主IP。要想改成其他IP,需要修改静态路由表。用
+<pre class="brush: bash">
+ip route
+</pre>
+可以查看系统的静态路由表。观察default一行的格式，在它的基础上修改源IP。
+<pre class="brush: bash">
+ip route change default dev eth0 src $IP 
+</pre><br/>
 
-<h1>二、对emailmarketer的修改</h1>
-<h2>1.在一次发信任务中使用多个退信人和多个发信人</h2>
-在emailmarketer中，区分发信人和退信人的概念。<br/>
-退信人是一次SMTP对话中，MAIL FROM命令后面跟的那个地址。<br/>
-发信人是在邮件的头部中，信头From:后面跟的那个地址。<br/><br/>
 
-首先用工具postaccountadmin.sh创建多个退信人地址。尽量多，先考虑创建50个。<br/>
-然后在emailmarketer的Create a contact list界面中填写退信人时，<br/>
-同时填写这50个退信人地址，并以英文的分号隔开，如图。<br/>
-<img src="img/0.png"  border="1" title="0" /><br/><br/>
-<img src="img/1.png"  border="1" title="1" />
+<h1>二、telnet</h1>
+<h2>1.使用telnet客户端</h2>
+<pre class="brush: bash">
+yum install telnet
+</pre>
+<h2>2.telnet服务端</h2>
+<pre class="brush: bash">
+yum install telnet-server
+</pre>
+另外telnet是个不安全的协议，很多Linux系统默认禁用telnet服务。<br/>
+所以安装后测试一下让别的主机连接本主机，如果连接不上，很可能是telnet服务被禁用了。<br/>
+启用的办法：
+<pre class="brush: bash">
+vi /etc/xinetd.d/telnet
+</pre>
+将disable一行的yes改为no<br/>
+
+
+<h1>三、httpd</h1>
+<h2>1.修改httpd监听端口 </h2>
+首先用
+<pre class="brush: bash">
+semanage port -l
+</pre>
+可以查看所有被使用的端口。<br/>
+选择一个没有被其他协议使用的，0-65535之间的一个数做新端口，比如81。
+<pre class="brush: bash">
+semanage port -l | grep http_port_t
+</pre>
+查看http相关端口
+<pre class="brush: text; class-name: 'class_text'">
+http_port_t tcp 80, 443, 488, 8008, 8009, 8443
+</pre>
+如果这个新端口81不在上述范围内，添加进来
+<pre class="brush: bash">
+semanage port -a -t http_port_t -p tcp 81
+</pre>
+然后重启httpd
+<pre class="brush: bash">
+service httpd restart
+</pre>
+在PC中打开浏览器，输入：
+http://ip:81<br/>
+<h2>2.配置apache使其支持多个ip。</h2>
+[注]这一步现在已经不再必须。<br/>
+ <br/>
+详细文档见http://httpd.apache.org/docs/current/vhosts/<br/>
+编辑apache的配置文件：
+<pre class="brush: bash">
+cp /etc/httpd/conf/httpd.conf  /etc/httpd/conf/httpd.conf.backup_201008071800
+vi /etc/httpd/conf/httpd.conf
+</pre>
+在最后添加
+<pre class="brush: text; class-name: 'class_text'">
+<VirtualHost 116.255.162.71:80>
+     DocumentRoot /var/www/html
+     ServerName 你的主机名
+     ErrorLog logs/你的主机名-error_log
+     CustomLog logs/你的主机名-access_log common
+</VirtualHost>
+
+<VirtualHost 116.255.162.64:80>
+     DocumentRoot /var/www/html_2nd_ip
+     ServerName unknownname
+     ErrorLog logs/2nd_ip-error_log
+     CustomLog logs/2nd_ip-access_log common
+</VirtualHost>
+</pre>
+重启httpd:
+<pre class="brush: bash">
+service httpd restart
+</pre>
+
 </td>
 </tr>
 </tbody>
 </table>
+
 <script type="text/javascript">
 SyntaxHighlighter.config.bloggerMode = true; 
 SyntaxHighlighter.defaults['toolbar'] = false;  
 SyntaxHighlighter.defaults['auto-links'] = false; 
 SyntaxHighlighter.all() 
+
 </script>
 </body>
-
 </html>

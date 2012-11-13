@@ -7,8 +7,7 @@ showusage()
 	echo 'Usage:'
 	echo './postaccountadmin.sh -s:  Show all current domains and mail accounts;'
 	echo './postaccountadmin.sh -h:  Show help for this script;'
-	echo './postaccountadmin.sh -i:  Auto create accounts from file /tmp/newaccount.txt (made by emailmarketer);'
-	echo './postaccountadmin.sh -c:  Clear text of file /tmp/newaccount.txt;'
+	echo './postaccountadmin.sh -i:  Auto create/delete accounts for emailmarketer;'
 	echo './postaccountadmin.sh -a user@domain:  Add a mail account;'
 	echo './postaccountadmin.sh -a filename:  Add mail accounts from a file(full path);'
 	echo './postaccountadmin.sh -d user@domain: Delete a mail account;'
@@ -231,6 +230,34 @@ fromfile()
 	done
 }
 
+autoaccount()
+{
+	for file in /tmp/emadd/*
+	do
+		echo "Will you add email accounts from file $file? [ y | n ]"
+		read ans
+		if [ ans = 'y' ] || [ ans = 'Y' ] ; then
+			echo "OK. Adding..."
+			/var/www/html/tools/account/postaccountadmin.sh -a $file
+			rm -f $file
+		else
+			echo "You cancelled."
+		fi
+	done
+	
+	for file in /tmp/emdel/*
+	do
+		echo "Will you delete email accounts from file $file? [ y | n ]"
+		read ans
+		if [ ans = 'y' ] || [ ans = 'Y' ] ; then
+			echo "OK. Deleting..."
+			/var/www/html/tools/account/postaccountadmin.sh -d $file
+			rm -f $file
+		else
+			echo "You cancelled."
+		fi
+	done
+}
 
 ########################################################################################################################
 #程序入口
@@ -251,11 +278,7 @@ if (( $# == 1 )) ; then
 		showusage
 		exit 0
 	elif [ ${1} = '-i' ]; then
-		/var/www/html/tools/account/postaccountadmin.sh -a /tmp/newaccount.txt
-		cat /dev/null > /tmp/newaccount.txt
-		exit 0
-	elif [ ${1} = '-c' ]; then
-		cat /dev/null > /tmp/newaccount.txt
+		autoaccount
 		exit 0
 	fi
 	
