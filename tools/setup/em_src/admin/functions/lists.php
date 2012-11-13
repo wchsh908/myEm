@@ -764,6 +764,8 @@ class Lists extends SendStudio_Functions
 					$strjoin .= ";".$str;
 			}
 		}
+		fclose($fp);
+		
 		return $strjoin;
 	}
 	
