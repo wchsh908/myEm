@@ -2,7 +2,7 @@
 echo "hi,this is a test page for php.<br/>";
 
 	//2012-Sep-23, added by jinxiaohu
-	private function getnewEaddress()
+	function getnewEaddress()
 	{
 		//字符库0-9,a-z
 		$charray = range('a', 'z');
