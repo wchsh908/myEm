@@ -12,12 +12,13 @@ echo "hi,this is a test page for php.<br/>";
 		}
 
 		//打开读
-		$domainarray = file("/etc/postfix/vdomains");
-		if (count($domainarray) == 0)
+		$fp = fopen("/etc/postfix/vdomains", "r");
+		if (!$fp)
 			return "Error,can not open /etc/postfix/vdomains";
 		$strjoin="";
-		foreach ($domainarray as $domain)
+		while (!feof($fp))
 		{
+			$domain = fgets($fp, 999);
 			if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
 			{
 				$str = "bo_";
@@ -35,6 +36,8 @@ echo "hi,this is a test page for php.<br/>";
 					$strjoin .= ";".$str;
 			}
 		}
+		fclose($fp);
+		
 		return $strjoin;
 	}
 
