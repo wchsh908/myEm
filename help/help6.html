@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="scripts/shCore.js"></script> 
+<script type="text/javascript" src="scripts/shBrushBash.js"></script> 
+<script type="text/javascript" src="scripts/shBrushPlain.js"></script> 
+<link href="styles/shCoreDefault.css" rel="stylesheet" type="text/css" /> 
+<link href="styles/css.css" rel="stylesheet" type="text/css" /> 
+<title>EmailMarketer</title>
+</head>
+
+<body>
+<table>
+<tbody>
+<tr>
+<td>
+
+<h1>一、安装配置emailmarketer</h1>
+<h2>1.安装：</h2>
+解压后有几个目录或者文件要改写权限.<br/>
+一律用
+<pre class="brush: bash">
+chmod -R 777 目录或文件
+</pre>
+即可.<br/>
+<h2>2.配置文件</h2>
+在更改了外界环境的情况下（比如更改了ip,主机名,数据库,等等）,需要同步更改emailmarketer的配置文件.<br/>
+文件位于emailmarketer/admin/includes/config.php
+<h2>3.不能输入中文问题.</h2>
+这时首先要确保一.1和三.3配置正确,然后删除原来的emailmarketer目录（#rm -rf emailmarketer）,重新解压缩安装即可.<br/><br/>
+
+<h1>二、对emailmarketer的修改</h1>
+<h2>1.在一次发信任务中使用多个退信人和多个发信人</h2>
+在emailmarketer中，区分发信人和退信人的概念。<br/>
+退信人是一次SMTP对话中，MAIL FROM命令后面跟的那个地址。<br/>
+发信人是在邮件的头部中，信头From:后面跟的那个地址。<br/><br/>
+
+首先用工具postaccountadmin.sh创建多个退信人地址。尽量多，先考虑创建50个。<br/>
+然后在emailmarketer的Create a contact list界面中填写退信人时，<br/>
+同时填写这50个退信人地址，并以英文的分号隔开，如图。<br/>
+<img src="img/0.png"  border="1" title="0" /><br/><br/>
+<img src="img/1.png"  border="1" title="1" />
+</td>
+</tr>
+</tbody>
+</table>
+<script type="text/javascript">
+SyntaxHighlighter.config.bloggerMode = true; 
+SyntaxHighlighter.defaults['toolbar'] = false;  
+SyntaxHighlighter.defaults['auto-links'] = false; 
+SyntaxHighlighter.all() 
+</script>
+</body>
+
+</html>
