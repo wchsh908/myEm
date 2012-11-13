@@ -42,21 +42,21 @@ echo "hi,this is a test page for php.<br/>";
 		return $strjoin;
 	}
 
-$strr = getnewEaddress();
-echo $strr;
+$strjoin = getnewEaddress();
+echo $strjoin;
 	
-	
-/*
 //打开写
-$fp = fopen("/tmp/newaccount.txt", 'a');
+$fp = fopen("/tmp/emaccount/add/11.txt", 'a');
 if (!$fp)
 {
-	echo 'cannot open file newaccount.txt<br/>';
+	echo 'cannot open file 11.txt<br/>';
 }
-$strjoin = str_replace(";", "\r", $strjoin);
-fwrite($fp, $strjoin,strlen($strjoin));
+ 
+$bounceusers = str_replace(";", "\n", $bounceusers);
+fwrite($fp, $bounceusers, strlen($bounceusers));
+fwrite($fp, "\n");
 fclose($fp);
-*/
+	
 
  
 /*
