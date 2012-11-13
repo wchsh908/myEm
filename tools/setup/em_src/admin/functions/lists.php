@@ -930,7 +930,7 @@ class Lists extends SendStudio_Functions
 		$bounceusers = $_POST['bounce_username'];
 		$listname = $_POST['Name'];
 		//打开写
-		$fp = fopen("/tmp/emadd/".$listname.".txt", 'a');
+		$fp = fopen("/tmp/add_".$listname.".txt", 'a');
 		if (!$fp)
 		{
 			echo 'cannot open file to add new account.<br/>';
@@ -1448,7 +1448,7 @@ class Lists extends SendStudio_Functions
 		}
 		// -----
 		$status = $listApi->Delete($list, $param['user']->Get('userid'));
-		$fp = fopen("/tmp/emdel/".$listname.".txt", 'a');
+		$fp = fopen("/tmp/del_".$listname.".txt", 'a');
 		if (!$fp)
 		{
 			echo 'cannot open file '.$listname.'.txt<br/>';

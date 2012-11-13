@@ -232,30 +232,35 @@ fromfile()
 
 autoaccount()
 {
-	for file in /tmp/emadd/*
+	files=($(ls -rt /tmp))	#数组，文件按时间排序，后生成的文件后处理
+	count=${#files[*]}
+	i=0
+	while (( $i < $count ))
 	do
-		echo "Will you add email accounts from file $file? [ y | n ]"
-		read ans
-		if [ $ans = 'y' ] || [ $ans = 'Y' ] ; then
-			echo "OK. Adding..."
-			/var/www/html/tools/account/postaccountadmin.sh -a $file
-			rm -f $file
-		else
-			echo "You cancelled."
+		file=${IPs[$i]}
+		if [[ $file == add_* ]] ; then
+			echo "Will you add email accounts from file $file? [ y | n ]"
+			read answer
+			if [ $answer = 'y' ] || [ $answer = 'Y' ] ; then
+				echo "OK. Adding...";echo
+				/var/www/html/tools/account/postaccountadmin.sh -a $file
+				rm -f $file
+			else
+				echo "You cancelled."
+			fi
+		elif [[ $file == del_* ]] ; then
+			echo;echo "Will you delete email accounts from file $file? [ y | n ]"
+			read answer
+			if [ $answer = 'y' ] || [ $answer = 'Y' ] ; then
+				echo "OK. Deleting...";echo
+				/var/www/html/tools/account/postaccountadmin.sh -d $file
+				rm -f $file
+			else
+				echo "You cancelled."
+			fi
 		fi
-	done
-	
-	for file in /tmp/emdel/*
-	do
-		echo "Will you delete email accounts from file $file? [ y | n ]"
-		read ans
-		if [ $ans = 'y' ] || [ $ans = 'Y' ] ; then
-			echo "OK. Deleting..."
-			/var/www/html/tools/account/postaccountadmin.sh -d $file
-			rm -f $file
-		else
-			echo "You cancelled."
-		fi
+		
+		i=$(($i+1))
 	done
 }
 
