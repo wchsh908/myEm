@@ -237,24 +237,25 @@ autoaccount()
 	i=0
 	while (( $i < $count ))
 	do
-		file=${files[$i]}
-		if [[ $file == add_* ]] ; then
-			echo "Will you add email accounts from file $file? [ y | n ]"
+		partname=${files[$i]}
+		fullname=/tmp/$partname
+		if [[ $partname == add_* ]] ; then
+			echo "Will you add email accounts from file $partname? [ y | n ]"
 			read answer
 			if [ $answer = 'y' ] || [ $answer = 'Y' ] ; then
 				echo "OK. Adding...";echo
-				/var/www/html/tools/account/postaccountadmin.sh -a /tmp/$file
-				rm -f $file
+				/var/www/html/tools/account/postaccountadmin.sh -a $fullname
+				rm -f $fullname
 			else
 				echo "You cancelled."
 			fi
-		elif [[ $file == del_* ]] ; then
-			echo;echo "Will you delete email accounts from file $file? [ y | n ]"
+		elif [[ $partname == del_* ]] ; then
+			echo;echo "Will you delete email accounts from file $partname? [ y | n ]"
 			read answer
 			if [ $answer = 'y' ] || [ $answer = 'Y' ] ; then
 				echo "OK. Deleting...";echo
-				/var/www/html/tools/account/postaccountadmin.sh -d /tmp/$file
-				rm -f $file
+				/var/www/html/tools/account/postaccountadmin.sh -d $fullname
+				rm -f $fullname
 			else
 				echo "You cancelled."
 			fi
