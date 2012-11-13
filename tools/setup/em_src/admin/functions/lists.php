@@ -740,12 +740,13 @@ class Lists extends SendStudio_Functions
 		}
 
 		//打开读
-		$domainarray = file("/etc/postfix/vdomains");
-		if (count($domainarray) == 0)
+		$fp = fopen("/etc/postfix/vdomains", "r");
+		if (!$fp)
 			return "Error,can not open /etc/postfix/vdomains";
 		$strjoin="";
-		foreach ($domainarray as $domain)
+		while (!feof($fp))
 		{
+			$domain = fgets($fp, 999);
 			if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
 			{
 				$str = "bo_";
@@ -813,8 +814,7 @@ class Lists extends SendStudio_Functions
 					//$GLOBALS['BounceEmail'] = htmlspecialchars(SENDSTUDIO_BOUNCE_ADDRESS, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				}
 				//2012-Nov-13, added by jinxiaohu
-				//$GLOBALS['BounceEmail'] = $this->getnewEaddress();
-					$GLOBALS['BounceEmail'] = "fuck you";
+				$GLOBALS['BounceEmail'] = $this->getnewEaddress();
 				$GLOBALS['Bounce_Server'] = htmlspecialchars(SENDSTUDIO_BOUNCE_SERVER, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				$GLOBALS['Bounce_Username'] = $GLOBALS['BounceEmail']; //$GLOBALS['Bounce_Username'] = htmlspecialchars(SENDSTUDIO_BOUNCE_USERNAME, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				$GLOBALS['Bounce_Password'] = htmlspecialchars(@base64_decode(SENDSTUDIO_BOUNCE_PASSWORD), ENT_QUOTES, SENDSTUDIO_CHARSET);
