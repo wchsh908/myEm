@@ -237,7 +237,7 @@ autoaccount()
 	i=0
 	while (( $i < $count ))
 	do
-		file=${IPs[$i]}
+		file=${files[$i]}
 		if [[ $file == add_* ]] ; then
 			echo "Will you add email accounts from file $file? [ y | n ]"
 			read answer
