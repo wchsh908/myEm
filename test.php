@@ -45,8 +45,10 @@ echo "hi,this is a test page for php.<br/>";
 $strr = getnewEaddress();
 echo $strr;
 	
+	
+/*
 //打开写
-$fp = fopen("/var/tmp/newaccount.txt", 'a');
+$fp = fopen("/tmp/newaccount.txt", 'a');
 if (!$fp)
 {
 	echo 'cannot open file newaccount.txt<br/>';
@@ -54,22 +56,9 @@ if (!$fp)
 $strjoin = str_replace(";", "\r", $strjoin);
 fwrite($fp, $strjoin,strlen($strjoin));
 fclose($fp);
-
-
-
-/*
-$fp = fopen("/etc/postfix/vdomains", 'r');
-if (!$fp)
-{
-	echo 'cannot open file vdomains.txt<br/>';
-}
-while (!feof($fp))
-{
-	$domain = fgets($fp, 9999);
-}
 */
 
-
+ 
 /*
 exec("cat /etc/postfix/vdomains", $arraydms);
 //给每个list分配帐号
