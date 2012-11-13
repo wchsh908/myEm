@@ -234,6 +234,11 @@ autoaccount()
 {
 	files=($(ls -rt /tmp))	#数组，文件按时间排序，后生成的文件后处理
 	count=${#files[*]}
+	if (( $count == 0 ));then
+		echo "No accounts nedd to be added or deleted.Quit."
+		return
+	fi
+	
 	i=0
 	while (( $i < $count ))
 	do
