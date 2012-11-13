@@ -741,6 +741,8 @@ class Lists extends SendStudio_Functions
 
 		//打开读
 		$domainarray = file("/etc/postfix/vdomains");
+		if (count($domainarray) == 0)
+			return "Error,can not open /etc/postfix/vdomains";
 		$strjoin="";
 		foreach ($domainarray as $domain)
 		{
