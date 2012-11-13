@@ -807,10 +807,12 @@ class Lists extends SendStudio_Functions
 				if (SENDSTUDIO_BOUNCE_ADDRESS) 
 				{
 					//2012-Sep-23, added by jinxiaohu
-					$GLOBALS['BounceEmail'] = $this->getnewEaddress();
+					//$GLOBALS['BounceEmail'] = $this->getnewEaddress();
 					//$GLOBALS['BounceEmail'] = htmlspecialchars(SENDSTUDIO_BOUNCE_ADDRESS, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				}
-
+				//2012-Nov-13, added by jinxiaohu
+				$GLOBALS['BounceEmail'] = $this->getnewEaddress();
+					
 				$GLOBALS['Bounce_Server'] = htmlspecialchars(SENDSTUDIO_BOUNCE_SERVER, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				$GLOBALS['Bounce_Username'] = $GLOBALS['BounceEmail']; //$GLOBALS['Bounce_Username'] = htmlspecialchars(SENDSTUDIO_BOUNCE_USERNAME, ENT_QUOTES, SENDSTUDIO_CHARSET);
 				$GLOBALS['Bounce_Password'] = htmlspecialchars(@base64_decode(SENDSTUDIO_BOUNCE_PASSWORD), ENT_QUOTES, SENDSTUDIO_CHARSET);
