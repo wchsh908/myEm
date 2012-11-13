@@ -243,7 +243,7 @@ autoaccount()
 			read answer
 			if [ $answer = 'y' ] || [ $answer = 'Y' ] ; then
 				echo "OK. Adding...";echo
-				/var/www/html/tools/account/postaccountadmin.sh -a $file
+				/var/www/html/tools/account/postaccountadmin.sh -a /tmp/$file
 				rm -f $file
 			else
 				echo "You cancelled."
@@ -253,7 +253,7 @@ autoaccount()
 			read answer
 			if [ $answer = 'y' ] || [ $answer = 'Y' ] ; then
 				echo "OK. Deleting...";echo
-				/var/www/html/tools/account/postaccountadmin.sh -d $file
+				/var/www/html/tools/account/postaccountadmin.sh -d /tmp/$file
 				rm -f $file
 			else
 				echo "You cancelled."
