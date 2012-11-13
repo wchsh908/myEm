@@ -744,19 +744,22 @@ class Lists extends SendStudio_Functions
 		$strjoin="";
 		foreach ($domainarray as $domain)
 		{
-			$str = "bo_";
-			$count = rand(10, 15);//长度
-			for ($i = 0; $i < $count; $i++)
+			if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
 			{
-				$index = rand(0, 35);
-				$str .= $charray[$index];
+				$str = "bo_";
+				$count = rand(10, 15);//长度
+				for ($i = 0; $i < $count; $i++)
+				{
+					$index = rand(0, 35);
+					$str .= $charray[$index];
+				}
+				$str .= "@".$domain;
+				
+				if ($strjoin == "")
+					$strjoin .= $str;	
+				else
+					$strjoin .= ";".$str;
 			}
-			$str .= "@".$domain;
-			
-			if ($strjoin == "")
-				$strjoin .= $str;	
-			else
-				$strjoin .= ";".$str;
 		}
 		return $strjoin;
 	}
