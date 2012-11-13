@@ -239,21 +239,21 @@ autoaccount()
 	do
 		partname=${files[$i]}
 		fullname=/tmp/$partname
-		if [[ $partname == add_* ]] ; then
-			echo "Will you add email accounts from file $partname? [ y | n ]"
+		if [[ $partname == add_*.txt ]] ; then
+			echo;echo "Will you add email accounts from file $partname? [ y | n ]"
 			read answer
 			if [ $answer = 'y' ] || [ $answer = 'Y' ] ; then
-				echo "OK. Adding...";echo
+				echo "OK. Adding...";
 				/var/www/html/tools/account/postaccountadmin.sh -a $fullname
 				rm -f $fullname
 			else
 				echo "You cancelled."
 			fi
-		elif [[ $partname == del_* ]] ; then
+		elif [[ $partname == del_*.txt ]] ; then
 			echo;echo "Will you delete email accounts from file $partname? [ y | n ]"
 			read answer
 			if [ $answer = 'y' ] || [ $answer = 'Y' ] ; then
-				echo "OK. Deleting...";echo
+				echo "OK. Deleting...";
 				/var/www/html/tools/account/postaccountadmin.sh -d $fullname
 				rm -f $fullname
 			else
