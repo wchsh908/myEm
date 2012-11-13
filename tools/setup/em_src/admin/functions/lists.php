@@ -747,6 +747,7 @@ class Lists extends SendStudio_Functions
 		while (!feof($fp))
 		{
 			$domain = fgets($fp, 999);
+			$domain = trim($domain);
 			if (ereg ('^([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$', $domain))
 			{
 				$str = "bo_";
