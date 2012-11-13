@@ -236,7 +236,7 @@ autoaccount()
 	do
 		echo "Will you add email accounts from file $file? [ y | n ]"
 		read ans
-		if [ ans = 'y' ] || [ ans = 'Y' ] ; then
+		if [ $ans = 'y' ] || [ $ans = 'Y' ] ; then
 			echo "OK. Adding..."
 			/var/www/html/tools/account/postaccountadmin.sh -a $file
 			rm -f $file
@@ -249,7 +249,7 @@ autoaccount()
 	do
 		echo "Will you delete email accounts from file $file? [ y | n ]"
 		read ans
-		if [ ans = 'y' ] || [ ans = 'Y' ] ; then
+		if [ $ans = 'y' ] || [ $ans = 'Y' ] ; then
 			echo "OK. Deleting..."
 			/var/www/html/tools/account/postaccountadmin.sh -d $file
 			rm -f $file
