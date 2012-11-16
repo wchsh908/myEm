@@ -62,9 +62,10 @@ cd tools/setup
 安装时观察屏幕输出，若每一步没有异常情况出现，整个软件环境安装结束。<br/><br/>
 
 <h2>4.配置网络</h2>
-来到tools/IP目录下。
+来到tools/IP目录下。如果自动切换IP的程序已经开启了，先把它关闭。
 <pre class="brush: bash">
 cd /var/www/html/tools/IP
+./serviceip stop
 </pre>
 1)把本服务器所有IP地址写到本目录下的srcIP.txt<br/>
 如果IP是连续的(比如从218.98.140.2一直到218.98.140.254)，你又懒得一个一个输入，可以用类似如下的命令将IP输入到srcIP.txt：
