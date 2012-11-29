@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="scripts/shCore.js"></script> 
+<script type="text/javascript" src="scripts/shBrushBash.js"></script> 
+<script type="text/javascript" src="scripts/shBrushPlain.js"></script> 
+<link href="styles/shCoreDefault.css" rel="stylesheet" type="text/css" /> 
+<link href="styles/css.css" rel="stylesheet" type="text/css" /> 
+<title>使用OpenDKIM</title>
+</head>
+
+<body>
+<table>
+<tbody>
+
+<tr>
+<td>
+
+<h1>一、DKIM简介</h1>
+Domain Keys Identified Mail(DKIM)，是一种基于域名的邮件认证技术。<br/>
+其方式是在DNS中存放public key，然后在发信时给信加上数字签名。<br/><br/>
+
+<h1>二、DKIM原理</h1>
+域名拥有者首先为域名生成一对private/public key，用于给从该域名发出的邮件签名。<br/>
+其中public key以TXT记录的方式存在DNS上，private key则保留在自己的邮件服务器上。<br/><br/>
+
+当发送一封邮件时，dkim-milter就根据该邮件的发送域的private key给邮件加个签名。<br/>
+加完签名后，邮件内容的头部中将会多出一个DKIM-Signature头，然后邮件被发出。<br/><br/>
+
+另一方面，当收到一封含有DKIM-Signature头的邮件时，OpenDKIM会提取这个头部，从中得到域名。<br/>
+然后根据该域名去做一次DNS查询，查到TXT记录，获得public key。用这个public key一比对<br/>
+就可以知道收到的那封信中的签名是不是有效的。如果是有效的，就会在邮件头部中加一个dkim=pass头。<br/><br/>
+
+<h1>三、安装OpenDKIM</h1>
+有许多软件可以用来在管理邮件系统中DKIM签名。<br/>
+OpenDKIM是其中一种，它是开源的，起源于另一种DKIM软件dkim-miter.<br/><br/>
+
+rpm包安装：<br/>
+<pre class="brush: bash">
+yum install opendkim
+</pre>
+<br/>
+源码安装：<br/>
+如果找不到合适的源下载不到OpenDKIM的rpm包，也可以尝试源码安装。<br/>
+源码可以从官方网站获取：http://www.opendkim.org<br/>
+不过源码安装较为复杂，详见http://cloudmail.iteye.com/blog/1576683和<br/>
+http://www.opendkim.org/INSTALL。<br/><br/>
+
+<h1>四、配置 OpenDKIM</h1>
+注意：如果你只想验证收到的邮件而不是用来给发出去的邮件签名的话，从第(5)步开始就可以了。<br/><br/>
+(1)起一个selector名字。<br/>
+selector的意义在于使我们可以更换域名的public/private key对。<br/>
+起一个名字，就可以换一对新的key。<br/>
+这个名字可以随便起。<br/><br/>
+	
+(2)运行脚本<br/>
+<pre class="brush: bash">
+opendkim-genkey -a -s SELECTOR名
+</pre>
+opendkim-genkey的man帮助文档有选项的详细细节。<br/>
+这一步将生成两个文件，一个存放private key，一个存放TXT记录。<br/><br/>
+
+(3)发布你的public DNS key<br/>
+将(2)中存放TXT记录的那个文件中的文本取出，用来更改DNS。开头部分格式应该是<br/>
+SELECTOR._domainkey.DOMAIN<br/>
+其中SELECTOR就是(1)中起的名字，DOMAIN是你的域名。<br/><br/>
+
+DNS记录设好后，可以检查一下DNS设的是否正确：<br/>
+<pre class="brush: bash">
+dig -t txt SELECTOR._domainkey.DOMAIN NAMESERVER
+</pre>
+其中NAMESERVER是从
+<pre class="brush: bash">
+dig -t ns DOMAIN
+</pre>
+中得知的。<br/><br/>
+
+(4)建立一个非登录用户供OpenDKIM使用(比如名为dkim):
+<pre class="brush: bash">
+useradd dkim
+</pre>
+保管好(2)中存放private key的那个文件，比如重命名为/var/db/dkim/SELECTOR名.key.pem<br/>
+该文件以及目录/var/db/dkim的拥有者设为该用户，文件和目录的权限分别为0600和0700.<br/><br/>
+
+(5)配置Postfix：<br/>
+在postfix的main.cf中加入：<br/>
+<pre class="brush: text; class-name: 'class_text'">
+smtpd_milters = inet:localhost:8891
+non_smtpd_milters = inet:localhost:8891
+</pre>
+关于Postfix中的OpenDKIM部分的详细文档请参考：<br/>
+http://www.postfix.org/MILTER_README.html#workarounds<br/><br/>
+
+(6)编辑OpenDKIM的配置文件。	<br/>
+cp opendkim/opendkim.conf.sample /etc/opendkim.conf<br/>
+对/etc/opendkim.conf添加如下内容：<br/>
+<pre class="brush: text; class-name: 'class_text'">
+Canonicalization relaxed/simple
+Domain 你的域名
+Keyfile 保存private key的文件全名
+MTA MSA
+Selector SELECTOR名
+Socket inet:8891@localhost
+UserID (4)中建立的用户名
+Syslog Yes
+</pre>
+关于OpenDKIM配置文件的选项，参考http://opendkim.org/opendkim.conf.5.html<br/><br/>
+
+(7)启动OpenDKIM。<br/>
+<pre class="brush: bash">
+opendkim  -x /etc/opendkim.conf
+</pre>
+也可以直接使用命令选项，而不是像(6)那样使用配置文件，比如：
+<pre class="brush: bash">
+opendkim -l -p SOCKETSPEC -d DOMAIN -k KEYFILE -s SELECTOR
+</pre>
+关于opendkim命令选项的详细情况，参考http://opendkim.org/opendkim.8.html<br/><br/>
+
+(8)重启Postfix.<br/><br/>
+
+<h1>五、高级配置</h1>
+<h2>KeyTable和SigningTable</h2>
+假设你有两个域名：example.com和example.net，并且发给president@example.com<br/>
+的签名与example.com域内其他用户不同。那么配置方法是：<br/><br/>
+
+首先用三个selector，生成三对key。比如三个selector是"foo", "bar"和"baz"，<br/>
+生成的三个private key的文件放在/usr/local/etc/dkim/keys下，文件名分别为<br/>
+"president", "excom" 和 "exnet"<br/><br/>
+
+创建一个KeyTable文件，内容如下：<br/>
+<pre class="brush: text; class-name: 'class_text'">
+	preskey	example.com:foo:/usr/local/etc/dkim/keys/president
+	comkey	example.com:bar:/usr/local/etc/dkim/keys/excom
+	netkey	example.net:baz:/usr/local/etc/dkim/keys/exnet
+</pre>
+文件保存为/usr/local/etc/dkim/keytable.<br/><br/>
+
+创建一个SigningTable文件，内容为：<br/>
+<pre class="brush: text; class-name: 'class_text'">
+	president@example.com	preskey
+	*@example.com		comkey
+	*@example.net		netkey
+</pre>
+文件保存为/usr/local/etc/dkim/signingtable.<br/><br/>
+
+配置文件/etc/opendkim.conf中添加<br/>
+<pre class="brush: text; class-name: 'class_text'">
+	KeyTable	/usr/local/etc/dkim/keytable
+	SigningTable	refile:/usr/local/etc/dkim/signingtable
+</pre>
+重启OpenDKIM。<br/><br/>
+
+<h1>六、测试</h1>
+发封邮件给下列邮箱之一：<br/>
+sa-test@sendmail.net<br/>
+check-auth@verifier.port25.com<br/>
+autorespond+dkim@dk.elandsys.com<br/>
+test@dkimtest.jason.long.name<br/>
+dktest@exhalus.net<br/>
+dkim-test@altn.com<br/>
+dktest@blackops.org<br/>
+对方会很快的回信给你，告诉你dkim是否设置正确。<br/><br/>
+另一种方法是发一封邮件给Gmail和Yahoo邮箱，然后观察收到的邮件的全文。<br/><br/>
+
+
+参考资料：<br/>
+http://www.elandsys.com/resources/mail/dkim/opendkim.html<br/>
+http://opendkim.org/opendkim-README<br/>
+
+
+</td>
+</tr>
+</tbody>
+</table>
+<script type="text/javascript">
+SyntaxHighlighter.config.bloggerMode = true; 
+SyntaxHighlighter.defaults['toolbar'] = false;  
+SyntaxHighlighter.defaults['auto-links'] = false; 
+SyntaxHighlighter.all() 
+</script>
+</body>
+
+</html>
