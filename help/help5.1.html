@@ -62,9 +62,11 @@ opendkim-genkey的man帮助文档有选项的详细细节。<br/>
 这一步将生成两个文件，一个存放private key，一个存放TXT记录。<br/><br/>
 
 (3)发布你的public DNS key<br/>
-将(2)中存放TXT记录的那个文件中的文本取出，用来更改DNS。开头部分格式应该是<br/>
-SELECTOR._domainkey.DOMAIN<br/>
-其中SELECTOR就是(1)中起的名字，DOMAIN是你的域名。<br/><br/>
+将(2)中存放TXT记录的那个文件中的文本取出，用来更改DNS。TXT记录的格式类似于：<br/>
+selector._domainkey.example.com. IN TXT "v=DKIM1; k=rsa; <br/>
+p=MEwwPQRJKoZIhvcNADAQCQADOwAwOAIxANPpYHdE2tevfEpvL1Tk2dDY<br/>
+v0pF28/f5MxU83x/0bsn4R4p7waPaz1IbOGs/6bm5QIDAQAB"<br/>
+<br/><br/>
 
 DNS记录设好后，可以检查一下DNS设的是否正确：<br/>
 <pre class="brush: bash">
